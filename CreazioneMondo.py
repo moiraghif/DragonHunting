@@ -1,20 +1,17 @@
 import numpy as np
 
-class mondo():
+class mondo:
     'Costruzione Mondo'
     #così in futuro si può passare come paramentro della classe
     #per avere posizione iniziale diverso, ma andra gestita eccezione posizione
     # non valido in caso si sovrappone su X
     # per il momento il mondo è un 5x5
-    def __init__(self):
-        self.archer_pos = 4,1
+    def __init__(self, grande):
+        self.len = grande
+        self.archer_pos = 4,1 # dopo renderle non randomiche
         self.knight_pos = 3,0
         self.dragon_pos = 0,4
-        self.mondo = np.matrix([['O','O','O','O','O'],
-                                ['O','X','O','O','O'],
-                                ['O','O','X','O','O'],
-                                ['O','O','O','O','O'],
-                                ['O','O','O','X','O']])
+        self.mondo = np.matrix([['O' for i in range(self.len)] for i in range(self.len)])
         self.mondo[self.archer_pos] = 'A'
         self.mondo[self.knight_pos] = 'K'
         self.mondo[self.dragon_pos] = 'D'
@@ -54,7 +51,7 @@ class mondo():
                 self.mondo[self.archer_pos]=char #mossa valida normale
                 return True
         if (key=='DOWN'):
-            if(self.archer_pos[0]==4):
+            if(self.archer_pos[0]==(self.len-1)):
                 print('non è possibile muoverlo sopra, limite mondo')
                 #solleva eccezione
                 return False
@@ -104,7 +101,7 @@ class mondo():
                 self.mondo[self.archer_pos]=char #mossa valida normale
                 return True
         if(key=='RIGHT'):
-            if(self.archer_pos[1]==4):
+            if(self.archer_pos[1]==(self.len-1)):
                 print('non è possibile muoverlo sopra, limite mondo')
                 #solleva eccezione
                 return False
