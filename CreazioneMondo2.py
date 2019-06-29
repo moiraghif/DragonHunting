@@ -20,6 +20,8 @@ class Agent:
         self.movements = [self.move(d, l)
                           for l in range(self.velocity)
                           for d in ["up", "down", "left", "right"]]
+        # a list of actions (functions) that the Agent can do
+        self.actions = self.movements + []
 
     def initialize_world(self, world):
         self.world = world
@@ -29,11 +31,12 @@ class Agent:
         # yes, it is a clojure: it returns a function
         y = 0 if d not in ["right", "left"] \
             else l * (+1 if d == "right" else -1)
-        x = 0 if d not in ["up" in "down"] \
+        x = 0 if d not in ["up", "down"] \
             else l * (+1 if d == "down" else -1)
 
         def make_movment():
             self.world.move_of(self, y=y, x=x)
+
         return make_movment
 
     def look_around(self):
@@ -63,9 +66,8 @@ class World:
         self.insert_obstacles()
         self.world[0, round(self.dim_x / 2)] = str(dragon)
         for i, p in enumerate(players):
-            self.world[self.dim_y - 1,
-                       self.dim_x - 1 - i] = p
-        for p in self.players:
+            self.world[self.dim_x - 1 - i,
+                       self.dim_y - 1] = p
             p.initialize_world(self)
         dragon.initialize_world(self)
 
@@ -107,7 +109,6 @@ class World:
         if not self.world[pos_from] or not self.is_free(pos_to):
             return False
         # move the agent
-        # POSSIBLE ERROR: the second assignment must be a pointer
         self.world[pos_from], self.world[pos_to] = "", self.world[pos_from]
         return True
 
@@ -115,7 +116,7 @@ class World:
         "Get the position of an agent"
         for y in range(self.dim_y):
             for x in range(self.dim_x):
-                if self.world[y, x] == agent.char:
+                if self.world[x, y] == agent.char:
                     return (x, y)
         return None
 
@@ -130,10 +131,10 @@ class World:
     def explore(self, agent, vr):
         "Return what an agent see"
         pos = self.get_position(agent)
-        y = (0 if pos[0] - vr < 0 else pos[0] - vr,
-             self.dim_y - 1 if pos[0] + vr >= self.dim_y else pos[0] + vr)
-        x = (0 if pos[1] - vr < 0 else pos[1] - vr,
-             self.dim_x - 1 if pos[1] + vr >= self.dim_x else pos[1] + vr)
+        x = (0 if pos[0] - vr < 0 else pos[0] - vr,
+             self.dim_x if pos[0] + vr > self.dim_x else pos[0] + vr + 1)
+        y = (0 if pos[1] - vr < 0 else pos[1] - vr,
+             self.dim_y if pos[1] + vr > self.dim_y else pos[1] + vr + 1)
         return self.world[x[0]:x[1], y[0]:y[1]]
 
     def __str__(self):
