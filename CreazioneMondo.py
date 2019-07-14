@@ -5,23 +5,23 @@ import re
 DRAGON_CHAR = "D"
 KNIGHT_CHAR = "K"
 ARCHER_CHAR = "A"
-OBSTABLE_CHAR = "█"
+OBSTACLE_CHAR = "█"
+OBSTACLE_CONST = 0.12
 
 
 class Agent:
-    def __init__(self, char, item, vr, vel):
+    def __init__(self, char, item, vel):
         "Create a new agent"
         self.char = char
         self.world = None
         self.item = item
-        self.view_range = vr
         self.velocity = vel
         # a list of possible movements that the agent can do
-        self.movements = [self.move(d, l)
-                          for l in range(self.velocity)
-                          for d in ["up", "down", "left", "right"]]
+        movements = [self.move(d, l)
+                     for l in range(1, self.velocity)
+                     for d in ["up", "down", "left", "right"]]
         # a list of actions (functions) that the Agent can do
-        self.actions = self.movements + []
+        self.actions = movements + []
 
     def initialize_world(self, world):
         self.world = world
@@ -41,7 +41,7 @@ class Agent:
 
     def look_around(self):
         "Just look around"
-        return self.world.explore(self, self.view_range)
+        return self.world.explore()
 
     def __str__(self):
         return self.char
@@ -73,15 +73,15 @@ class World:
 
     def insert_obstacles(self):
         "Insert obstacles in the new world"
-        # TODO: generate new obstacles at random
-        for i in range(2):
-            for j in range(2):
-                self.world[i, j] = OBSTABLE_CHAR
+        for i in range(self.dim_x):
+            for j in range(self.dim_y):
+                if np.random.rand() > 1 - OBSTACLE_CONST:
+                    self.world[i, j] = OBSTACLE_CHAR
 
     def get_agents(self):
         "Get all living agents in the world"
         return self.world[np.where(self.world and
-                                   self.world != OBSTABLE_CHAR)]
+                                   self.world != OBSTACLE_CHAR)]
 
     def end_game(self):
         "Is the game finished? In that case, return the winner(s)"
@@ -99,8 +99,7 @@ class World:
         if pos[0] < 0 or pos[0] > self.dim_x or \
            pos[1] < 0 or pos[1] > self.dim_y:
             return False
-        return False if self.world[pos] == OBSTABLE_CHAR \
-            else not self.world[pos]
+        return self.world[pos] == ""
 
     def move(self, pos_from, pos_to):
         "Move an element if possible"
@@ -123,19 +122,24 @@ class World:
     def move_of(self, agent, y=0, x=0):
         "Move the agent if possible"
         pos_from = self.get_position(agent)
+        # check if there is the agent on the board
         if not pos_from:
             return False
+        # check if the movement is in just one direction and not null
+        if (x > 0 and y > 0) or x + y == 0:
+            return False
+        # check if there are obstacles between
+        if (self.world[pos_from[0]:(pos_from[0] + y + 1),
+                       pos_from[1]:(pos_from[1] + x + 1)
+                       ] != "").any():
+            return False
+        # move the agent
         pos_to = (pos_from[0] + x, pos_from[1] + y)
         return self.move(pos_from, pos_to)
 
     def explore(self, agent, vr):
-        "Return what an agent see"
-        pos = self.get_position(agent)
-        x = (0 if pos[0] - vr < 0 else pos[0] - vr,
-             self.dim_x if pos[0] + vr > self.dim_x else pos[0] + vr + 1)
-        y = (0 if pos[1] - vr < 0 else pos[1] - vr,
-             self.dim_y if pos[1] + vr > self.dim_y else pos[1] + vr + 1)
-        return self.world[x[0]:x[1], y[0]:y[1]]
+        "Return what an agent sees"
+        return self.world
 
     def __str__(self):
         "Convert the world into string"
@@ -144,13 +148,13 @@ class World:
                                                    for i in r]),
                                self.world))
         txt += "│\n" + "└" + "─" * (2 * self.dim_x - 1) + "┘"
-        return re.sub(OBSTABLE_CHAR + r"\s" + OBSTABLE_CHAR,
-                      3 * OBSTABLE_CHAR, txt)
+        return re.sub(OBSTACLE_CHAR + r"\s" + OBSTACLE_CHAR,
+                      3 * OBSTACLE_CHAR, txt)
 
 
 if __name__ == "__main__":
-    players = [Agent(ARCHER_CHAR, "archer", 2, 2),
-               Agent(KNIGHT_CHAR, "sword", 1, 1)]
-    dragon = Agent(DRAGON_CHAR, "fire", 5, 3)
+    players = [Agent(ARCHER_CHAR, "archer", 2),
+               Agent(KNIGHT_CHAR, "sword", 1)]
+    dragon = Agent(DRAGON_CHAR, "fire", 3)
     world1 = World(dragon, players)
     print(world1)
