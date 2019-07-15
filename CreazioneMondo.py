@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import ipdb
 
 
 DRAGON_CHAR = "D"
@@ -29,9 +30,9 @@ class Agent:
     def move(self, d, l):
         "Generate the function to mode the agent"
         # yes, it is a clojure: it returns a function
-        y = 0 if d not in ["right", "left"] \
+        x = 0 if d not in ["right", "left"] \
             else l * (+1 if d == "right" else -1)
-        x = 0 if d not in ["up", "down"] \
+        y = 0 if d not in ["up", "down"] \
             else l * (+1 if d == "down" else -1)
 
         def make_movment():
@@ -115,13 +116,14 @@ class World:
         "Get the position of an agent"
         for y in range(self.dim_y):
             for x in range(self.dim_x):
-                if self.world[x, y] == agent.char:
-                    return (x, y)
+                if self.world[y, x] == agent.char:
+                    return (y, x)
         return None
 
-    def move_of(self, agent, y=0, x=0):
+    def move_of(self, agent, x=0, y=0):
         "Move the agent if possible"
         pos_from = self.get_position(agent)
+        #ipdb.set_trace()
         # check if there is the agent on the board
         if not pos_from:
             return False
@@ -129,12 +131,17 @@ class World:
         if (x > 0 and y > 0) or x + y == 0:
             return False
         # check if there are obstacles between
-        if (self.world[pos_from[0]:(pos_from[0] + y + 1),
-                       pos_from[1]:(pos_from[1] + x + 1)
-                       ] != "").any():
+        #if (self.world[pos_from[0]:(pos_from[0] + y + 1),
+        #               pos_from[1]:(pos_from[1] + x + 1)
+        #               ] != "" ).any():
+        #the vector above contains also the agent itselt in pos (pos_from[0],pos_from[1])
+        #thus we need to give clearance even in case it has both '' and agent.__str__()
+        if (not np.in1d(self.world[pos_from[0]:(pos_from[0] + y + 1),
+                                   pos_from[1]:(pos_from[1] + x + 1)],
+                        ["",agent.__str__()]).all()):
             return False
         # move the agent
-        pos_to = (pos_from[0] + x, pos_from[1] + y)
+        pos_to = (pos_from[0] + y, pos_from[1] + x)
         return self.move(pos_from, pos_to)
 
     def explore(self, agent, vr):
