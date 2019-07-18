@@ -2,7 +2,7 @@ import numpy as np
 import re
 #import ipdb
 
-WORLD_DIM=7 
+WORLD_DIM=15 
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
 PLAYER_CHAR = '☺'
@@ -20,6 +20,7 @@ class World:
                                for y in range(self.dim_y)])
         #making the obstacles options
         if obstacle:
+        	np.random.seed(seed=1234)
         	self.insert_obstacles()
         #the position can be changed later
         self.world[round(self.dim_x / 2)-1, round(self.dim_x / 2)+1] = DRAGON_CHAR
@@ -38,8 +39,13 @@ class World:
                     self.world[i, j] = OBSTACLE_CHAR
 
     #def get_player
+    def treasure_gone(self):
+    	if self.get_position(TREASURE_CHAR):
+    		return 1
+    	else:
+    		return 0
 
-    def game_ended(self):
+    def game_state(self):
         "Is the game finished? In that case, return the True"
         #will be the 
         #if the coin is eaten and he is at the exit again
@@ -48,9 +54,16 @@ class World:
         #BILBO was eaten
         elif (not self.get_position(PLAYER_CHAR)):
         	return 2 #he failed
-        elif (not self.get_position(TREASURE_CHAR)):
-        	return 3 #he got the coin (we'll see if needed)
         return 0 #continue the game please 
+
+    def reward(self):
+    	game_state = self.game_ended()
+    	if game_state==1:
+    		return 20
+    	elif game_state==2:
+    		return -50
+    	else:
+    		return -1
 
     def is_border(self, pos):
         """Check if the cell is borderline:
@@ -140,22 +153,22 @@ class World:
 
 
 
-mondo=World(WORLD_DIM,WORLD_DIM)
-print(mondo)
-
-#seems working
-for i in range(WORLD_DIM):
-	#move = mondo.random_move()
-	#print(move)
-	mondo.action('right')
+if __name__=='__main__':
+	mondo=World(WORLD_DIM,WORLD_DIM)
 	print(mondo)
 
-mondo.action('down')
-print(mondo)
-mondo.action('down')
-print(mondo)
-mondo.action('down')
-print(mondo)
-mondo.action('left')
-print(mondo)
-print(mondo.game_ended())
+	#seems working
+	for i in range(WORLD_DIM):
+		#move = mondo.random_move()
+		#print(move)
+		mondo.action('right')
+		print(mondo)
+
+	mondo.action('down')
+	print(mondo)
+	mondo.action('down')
+	print(mondo)
+	mondo.action('down')
+	print(mondo)
+	mondo.action('left')
+	print(mondo)
