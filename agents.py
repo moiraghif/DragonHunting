@@ -1,5 +1,5 @@
 import numpy as np
-
+from CreateBilboWorld import *
 
 class Agent:
     def __init__(self, char):
@@ -32,7 +32,9 @@ class Agent:
         return lambda: self.world.move_of(self, y=y, x=x)
 
     def random_action(self):
-        self.actions[np.random.randint(len(self.actions))]()
+        #mi serve il nome dell'azione
+        movements = ["up", "down", "left", "right"]
+        return(movements[np.random.randint(len(self.actions))])
 
     def __str__(self):
         return self.char

@@ -1,8 +1,9 @@
 import numpy as np
 import re
 #import ipdb
+from agents import *
 
-WORLD_DIM=15 
+WORLD_DIM=15
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
 PLAYER_CHAR = '☺'
@@ -15,6 +16,7 @@ class World:
         self.dim_x = dim_x
         self.dim_y = dim_y
         self.player= bilbo
+        bilbo.initialize_world(self)
         self.exit  = entrance
         self.world = np.array([["" for x in range(self.dim_x)]
                                for y in range(self.dim_y)])
@@ -23,11 +25,11 @@ class World:
         	np.random.seed(seed=1234)
         	self.insert_obstacles()
         #the position can be changed later
-        self.world[round(self.dim_x / 2)-1, round(self.dim_x / 2)+1] = DRAGON_CHAR
+        self.world[round(self.dim_x / 2)-1, self.dim_x-3] = DRAGON_CHAR
         self.world[round(self.dim_x / 2)-1,self.dim_x-1] = TREASURE_CHAR
         self.world[entrance] = PLAYER_CHAR
 
-        #this should be in agent class 
+        #this should be in agent class
         self.possible_moves = {1:'up',2:'down',3:'right',4:'left'}
 
     def insert_obstacles(self):
@@ -47,14 +49,14 @@ class World:
 
     def game_state(self):
         "Is the game finished? In that case, return the True"
-        #will be the 
+        #will be the
         #if the coin is eaten and he is at the exit again
-        if ((not self.get_position(TREASURE_CHAR)) and (self.get_position(PLAYER_CHAR)==self.exit)):#(get_position(self.player.char)==entrance)):
+        if ((not self.get_position(TREASURE_CHAR)) and (self.get_position(self.player.char)==self.exit)):#(get_position(self.player.char)==entrance)):
         	return 1 #means he won
         #BILBO was eaten
         elif (not self.get_position(PLAYER_CHAR)):
         	return 2 #he failed
-        return 0 #continue the game please 
+        return 0 #continue the game please
 
     def reward(self):
     	game_state = self.game_ended()
@@ -82,11 +84,12 @@ class World:
         # the finishing position is obstruited
         if not self.world[pos_from] or not self.is_border(pos_to):
             return False
-        # KILL bilbo 
+        # KILL bilbo
         if self.world[pos_to]==DRAGON_CHAR:
-        	self.world[pos_from] = ''
+            self.player=None
+            self.world[pos_from] = ''
         	#self.world[pos_to] = DRAGON_CHAR
-        	return True
+            return True
         #move him
         self.world[pos_from], self.world[pos_to] = "", self.world[pos_from]
         return True
@@ -99,9 +102,9 @@ class World:
                     return (y, x)
         return False
 
-    def move_if(self, x=0, y=0):
+    def move_of(self, agent, x=0, y=0):
         "Move the Biblo if possible"
-        pos_from = self.get_position(PLAYER_CHAR)
+        pos_from = self.get_position(agent.char)
         #ipdb.set_trace()
         # check if there is the agent on the board
         if not pos_from:
@@ -123,23 +126,20 @@ class World:
         pos_to = (pos_from[0] + y, pos_from[1] + x)
         return self.move(pos_from, pos_to)
 
-    def action(self,action):
-    	if action=='right': #right
-    		self.move_if(1,0)
-    	if action=='left':
-    		self.move_if(-1,0)
-    	if action=='up':
-    		self.move_if(0,-1)
-    	if action=='down':
-    		self.move_if(0,1)
+    #def action(self,action):
+    #	if action=='right': #right
+    #		self.move_of(1,0)
+    #	if action=='left':
+    #		self.move_of(-1,0)
+    #	if action=='up':
+    #		self.move_of(0,-1)
+    #	if action=='down':
+    #		self.move_of(0,1)
 
 
     def explore(self, agent):
         "Return what an agent sees"
         return self.world
-
-    def random_move(self):
-    	return self.possible_moves[np.random.randint(1,5)]
 
     def __str__(self):
         "Convert the world into string"
