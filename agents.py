@@ -1,4 +1,5 @@
 import numpy as np
+#import ipdb
 
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
@@ -67,9 +68,33 @@ class Agent:
 
 
 class QLearningAgent(Agent):
-    def learning_function(self):
-        pass
+    def learning_function(self,alpha,gamma,x_old,reward,x_new):
+        return ((1-alpha) * x_old + alpha*(reward + gamma*x_new))
 
+    def get_current_state(self):
+        """
+        This will be changed in a near future in order to get
+        the current state directly from the environment which
+        can be different from the position
+        """
+        return(self.world.get_position(self.char))
+
+    def treasure_gone(self):
+        return (self.world.treasure_gone())
+
+    def get_action(self,epsilon,q_table,possible_moves):
+        #ipdb.set_trace()
+        if np.random.uniform(0,1) < epsilon:
+            action = possible_moves[self.random_action()]
+        else:
+            action = np.argmax(q_table[self.get_current_state(),
+                                       self.treasure_gone()])
+        return(action)
+    def game_ended(self):
+        return(not self.world.game_state() == 0)
+
+    def reward(self):
+        return self.world.reward()
 
 class DeepQLearningAgent(Agent):
     def learning_function(self):

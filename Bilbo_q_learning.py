@@ -2,6 +2,7 @@ from CreateBilboWorld import *
 import numpy as np
 from importlib import reload
 import ipdb
+from agents import *
 
 TOT_EPISODES=70
 MAX_EPOCH = 1000
@@ -24,7 +25,7 @@ rewards = []
 
 for ep in range(TOT_EPISODES):
 	#recreate the environment
-	bilbo=Agent(PLAYER_CHAR)
+	bilbo=QLearningAgent(PLAYER_CHAR)
 	mondo=World(WORLD_DIM,WORLD_DIM,bilbo=bilbo,obstacle=True)
 	#print(World)
 	#do Q-stuff
@@ -33,40 +34,38 @@ for ep in range(TOT_EPISODES):
 	epoch = 0
 	try:
 		while not game_ended and epoch < MAX_EPOCH:
-			#remember to implement the fear later
-			current_state,treasure_gone,game_ended = mondo.get_state()
-			#the near it geprint()ts to the dragon the more random the movement
+			#the near it gets to the dragon the more random the movement
 			epsilon_fear = bilbo.fear(epsilon)
-			#epsilon_fear = epsilon
-			if np.random.uniform(0,1) < epsilon_fear:
-				action = possible_moves[bilbo.random_action()]
-				#print(action)
-			else:
-				action = np.argmax(q_table[current_state,treasure_gone])
-				#print(action)
+			action = bilbo.get_action(epsilon_fear,q_table,possible_moves)
+			current_state = bilbo.get_current_state()
+			treasure_gone = bilbo.treasure_gone()
 
 			old_q_val = q_table[current_state,treasure_gone][action]
 			bilbo.move(inverse_possible_moves[action])()
-			new_state,treasure_gone,game_ended = mondo.get_state()
-			reward = mondo.reward()
+
+			new_state = bilbo.get_current_state()
+			treasure_gone = bilbo.treasure_gone()
+			game_ended = bilbo.game_ended()
+			reward = bilbo.reward()
+
 			if reward == -50:
 				new_q_val = reward
-				 #ipdb.set_trace()
 			elif new_state==current_state:
+				#any kind of obtacle which made bilbo not move
 				new_q_val = -10 #-10 in case of obstacle
 			else:
 				next_q_val = np.max(q_table[new_state,treasure_gone])
-				new_q_val = (1-alpha) * old_q_val + alpha*(reward + gamma*next_q_val)
+				new_q_val = bilbo.learning_function(alpha,gamma,old_q_val,reward,next_q_val)
+
 			q_table[current_state,treasure_gone][action] = new_q_val
 			epoch += 1
 
-		if ep % 100 == 0:
+		if ep % 10 == 0:
 			print("episode", ep)
+			print(mondo)
+			print(mondo.get_state())
+			print(mondo.reward())
 		epsilon *= decay_epsilon
-		#show final part
-		print(mondo)
-		print(mondo.get_state())
-		print(mondo.reward())
 	except:
 		#had some issues with some index can be removed later
 		#kept it in case there were some errors it's easier to debug
