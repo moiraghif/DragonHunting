@@ -1,5 +1,4 @@
 import numpy as np
-from CreateBilboWorld import *
 
 class Agent:
     def __init__(self, char):
@@ -14,6 +13,9 @@ class Agent:
 
     def initialize_world(self, world):
         self.world = world
+
+    def get_pos(self):
+        return(self.world.get_position(self.char))
 
     def move(self, d):
         "Generate the function to mode the agent"
