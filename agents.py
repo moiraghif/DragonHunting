@@ -1,5 +1,4 @@
 import numpy as np
-#import ipdb
 
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
@@ -53,7 +52,7 @@ class Agent:
         '''
         dragon_pos = self.world.get_position(DRAGON_CHAR)
         self_pos = self.get_pos()
-        dist = np.sqrt((dragon_pos[0]-self_pos[0])^2 + (dragon_pos[1]-self_pos[1])^2)
+        dist = np.sqrt((dragon_pos[0]-self_pos[0])**2 + (dragon_pos[1]-self_pos[1])**2)
         return epsilon/(dist/(1+dist))
 
     def __str__(self):
@@ -73,17 +72,15 @@ class QLearningAgent(Agent):
 
     def get_current_state(self):
         """
-        This will be changed in a near future in order to get
-        the current state directly from the environment which
-        can be different from the position
+        Get the current state from the current world
+        it is used as a index for the q-table
         """
-        return(self.world.get_position(self.char))
+        return(self.world.get_state())
 
     def treasure_gone(self):
         return (self.world.treasure_gone())
 
     def get_action(self,epsilon,q_table,possible_moves):
-        #ipdb.set_trace()
         if np.random.uniform(0,1) < epsilon:
             action = possible_moves[self.random_action()]
         else:
