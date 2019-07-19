@@ -3,7 +3,7 @@ import numpy as np
 from importlib import reload
 import ipdb
 
-TOT_EPISODES=500
+TOT_EPISODES=70
 MAX_EPOCH = 1000
 
 #initalize the q_table:
@@ -35,7 +35,10 @@ for ep in range(TOT_EPISODES):
 		while not game_ended and epoch < MAX_EPOCH:
 			#remember to implement the fear later
 			current_state,treasure_gone,game_ended = mondo.get_state()
-			if np.random.uniform(0,1) < epsilon:
+			#the near it geprint()ts to the dragon the more random the movement
+			epsilon_fear = bilbo.fear(epsilon)
+			#epsilon_fear = epsilon
+			if np.random.uniform(0,1) < epsilon_fear:
 				action = possible_moves[bilbo.random_action()]
 				#print(action)
 			else:
@@ -55,30 +58,22 @@ for ep in range(TOT_EPISODES):
 				next_q_val = np.max(q_table[new_state,treasure_gone])
 				new_q_val = (1-alpha) * old_q_val + alpha*(reward + gamma*next_q_val)
 			q_table[current_state,treasure_gone][action] = new_q_val
-
-			#ipdb.set_trace()
-
-
-			#bilbo.move(bilbo.random_action())()
-			#print(q_table[World.get_state()[0:2]])
-
-			#game_ended = current_state[2]
-			#print(current_state)
-			#print(game_ended)
 			epoch += 1
-			#if epoch % 50 == 0:
-			#	print("epoch", epoch)
 
 		if ep % 100 == 0:
 			print("episode", ep)
 		epsilon *= decay_epsilon
+		#show final part
 		print(mondo)
 		print(mondo.get_state())
 		print(mondo.reward())
 	except:
 		#had some issues with some index can be removed later
 		#kept it in case there were some errors it's easier to debug
+		print("Ops! Something went wrong!")
 		ipdb.set_trace()
 
+
 print(q_table)
+print(epsilon)
 #print(mondo)
