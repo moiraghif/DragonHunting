@@ -52,7 +52,7 @@ class Agent:
         '''
         dragon_pos = self.world.get_position(DRAGON_CHAR)
         self_pos = self.get_pos()
-        dist = np.sqrt((dragon_pos[0]-self_pos[0])^2 + (dragon_pos[1]-self_pos[1])^2)
+        dist = np.sqrt((dragon_pos[0]-self_pos[0])**2 + (dragon_pos[1]-self_pos[1])**2)
         return epsilon/(dist/(1+dist))
 
     def __str__(self):
@@ -67,9 +67,31 @@ class Agent:
 
 
 class QLearningAgent(Agent):
-    def learning_function(self):
-        pass
+    def learning_function(self,alpha,gamma,x_old,reward,x_new):
+        return ((1-alpha) * x_old + alpha*(reward + gamma*x_new))
 
+    def get_current_state(self):
+        """
+        Get the current state from the current world
+        it is used as a index for the q-table
+        """
+        return(self.world.get_state())
+
+    def treasure_gone(self):
+        return (self.world.treasure_gone())
+
+    def get_action(self,epsilon,q_table,possible_moves):
+        if np.random.uniform(0,1) < epsilon:
+            action = possible_moves[self.random_action()]
+        else:
+            action = np.argmax(q_table[self.get_current_state(),
+                                       self.treasure_gone()])
+        return(action)
+    def game_ended(self):
+        return(not self.world.game_state() == 0)
+
+    def reward(self):
+        return self.world.reward()
 
 class DeepQLearningAgent(Agent):
     def learning_function(self):

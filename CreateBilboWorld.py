@@ -11,10 +11,13 @@ OBSTACLE_CHAR = "█"
 OBSTACLE_CONST = 0.12
 
 class World:
-    def __init__(self, dim_x=WORLD_DIM, dim_y=WORLD_DIM,bilbo=None,entrance=(0,0),obstacle=False):
+    def __init__(self, dim_x=WORLD_DIM, dim_y=None,bilbo=None,entrance=(0,0),obstacle=False):
         "Create a new World"
         self.dim_x = dim_x
-        self.dim_y = dim_y
+        if dim_y:
+            self.dim_y = dim_y
+        else:
+            self.dim_y = dim_x
         self.player= bilbo
         bilbo.initialize_world(self)
         self.exit  = entrance
@@ -78,7 +81,6 @@ class World:
         if self.world[pos] == OBSTACLE_CHAR:
             return False
         return True
-    #    return self.world[pos] == ""
 
     def move(self, pos_from, pos_to):
         "Move an element if possible"
@@ -115,34 +117,17 @@ class World:
         if (x > 0 and y > 0) or x + y == 0:
             return False
         # check if there are obstacles between
-        #if (self.world[pos_from[0]:(pos_from[0] + y + 1),
-        #               pos_from[1]:(pos_from[1] + x + 1)
-        #               ] != "" ).any():
-        #the vector above contains also the agent itselt in pos (pos_from[0],pos_from[1])
-        #thus we need to give clearance even in case it has both '' and agent.__str__()
-        #if (not np.in1d(self.world[pos_from[0]:(pos_from[0] + y + 1),
-        #                           pos_from[1]:(pos_from[1] + x + 1)],
-        #                ["",agent.__str__()]).all()):
-        #    return False
+        #will be checked with self.is_border() in self.move()
         # move the agent
         pos_to = (pos_from[0] + y, pos_from[1] + x)
         return self.move(pos_from, pos_to)
 
-    #def action(self,action):
-    #	if action=='right': #right
-    #		self.move_of(1,0)
-    #	if action=='left':
-    #		self.move_of(-1,0)
-    #	if action=='up':
-    #		self.move_of(0,-1)
-    #	if action=='down':
-    #		self.move_of(0,1)
-
     def get_state(self):
+        "Return the state for the q-learning"
         player_pos = self.get_position(self.player.char)
         treasure_state = self.treasure_gone()
         game_ended = False if self.game_state()==0 else True
-        return(player_pos,treasure_state,game_ended)
+        return(player_pos)
 
 
     def explore(self, agent):
