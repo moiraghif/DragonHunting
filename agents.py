@@ -1,5 +1,9 @@
 import numpy as np
-from CreateBilboWorld import *
+
+DRAGON_CHAR = '☠'
+TREASURE_CHAR = '♚'
+PLAYER_CHAR = '☺'
+OBSTACLE_CHAR = "█"
 
 class Agent:
     def __init__(self, char):
@@ -14,6 +18,9 @@ class Agent:
 
     def initialize_world(self, world):
         self.world = world
+
+    def get_pos(self):
+        return(self.world.get_position(self.char))
 
     def move(self, d):
         "Generate the function to mode the agent"
@@ -35,6 +42,18 @@ class Agent:
         #mi serve il nome dell'azione
         movements = ["up", "down", "left", "right"]
         return(movements[np.random.randint(len(self.actions))])
+
+    def fear(self,epsilon):
+        '''
+        return a new epsilon based also on a fear factor, if it's far from the
+        dragon then the the value is near epsilon (so low fear), if it's near
+        dragon then the value increases at most to 2*epsilon (when the dragon
+        is nearby)
+        '''
+        dragon_pos = self.world.get_position(DRAGON_CHAR)
+        self_pos = self.get_pos()
+        dist = np.sqrt((dragon_pos[0]-self_pos[0])^2 + (dragon_pos[1]-self_pos[1])^2)
+        return epsilon/(dist/(1+dist))
 
     def __str__(self):
         return self.char

@@ -59,7 +59,7 @@ class World:
         return 0 #continue the game please
 
     def reward(self):
-    	game_state = self.game_ended()
+    	game_state = self.game_state()
     	if game_state==1:
     		return 20
     	elif game_state==2:
@@ -75,6 +75,8 @@ class World:
         if pos[0] < 0 or pos[0] >= self.dim_x or \
            pos[1] < 0 or pos[1] >= self.dim_y:
             return False
+        if self.world[pos] == OBSTACLE_CHAR:
+            return False
         return True
     #    return self.world[pos] == ""
 
@@ -86,7 +88,7 @@ class World:
             return False
         # KILL bilbo
         if self.world[pos_to]==DRAGON_CHAR:
-            self.player=None
+            #self.player=None
             self.world[pos_from] = ''
         	#self.world[pos_to] = DRAGON_CHAR
             return True
@@ -135,6 +137,12 @@ class World:
     #		self.move_of(0,-1)
     #	if action=='down':
     #		self.move_of(0,1)
+
+    def get_state(self):
+        player_pos = self.get_position(self.player.char)
+        treasure_state = self.treasure_gone()
+        game_ended = False if self.game_state()==0 else True
+        return(player_pos,treasure_state,game_ended)
 
 
     def explore(self, agent):
