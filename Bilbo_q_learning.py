@@ -1,18 +1,16 @@
 from CreateBilboWorld import *
 import numpy as np
-#from importlib import reload
 import ipdb
 from agents import *
 import os
 
-
-import matplotlib.pyplot as plt  # for graphing our mean rewards over time
+import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-d = {TREASURE_CHAR: '1',  # blueish color
-     PLAYER_CHAR: '2',  # green
-     DRAGON_CHAR: '3',# red
-     OBSTACLE_CHAR: '4'}
+d = {TREASURE_CHAR: '16',
+     PLAYER_CHAR: '5',
+     DRAGON_CHAR: '10',
+     OBSTACLE_CHAR: '20'}
 
 TOT_EPISODES=100
 MAX_EPOCH = 500
@@ -44,6 +42,7 @@ for ep in range(TOT_EPISODES):
     game_ended=False
     epoch = 0
     anim = []
+    titles = []
     while not game_ended and epoch < MAX_EPOCH:
       #the near it gets to the dragon the more random the movement
       epoch += 1
@@ -92,16 +91,21 @@ for ep in range(TOT_EPISODES):
           obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
           for coord in obstacles:
                   env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
-          anim.append((plt.pcolor(env),))
-
+          title = "Epoch: " + str(epoch) + ", Epsilon: " + str(round(epsilon,2)) + ", Reward: " + str(reward)
+          titles.append(title)
+          anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
 
 
     epsilon *= decay_epsilon
     print(ep)
 
-im_ani = animation.ArtistAnimation(fig, anim, interval=50, repeat_delay=None,#put = 0 if you want to repeat
+#ipdb.set_trace()
+
+im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=None,#put = 0 if you want to repeat
                                    blit=True)
 
+plt.axis('off')
+plt.title(titles[-1])
 plt.show()
 print("Atlast the episilon value was ", epsilon)
 #print(mondo)
