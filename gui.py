@@ -1,4 +1,4 @@
-import CreateBilboWorld as world
+import DungensAndDragons as world
 import tkinter as tk
 from PIL import Image, ImageTk
 
@@ -20,7 +20,12 @@ class GUI:
             world.DRAGON_CHAR: self.load_image("./icons/dino.png"),
             world.OBSTACLE_CHAR: self.load_image("./icons/rock.png"),
             world.TREASURE_CHAR: self.load_image("./icons/treasure.png"),
-            world.PLAYER_CHAR: self.load_image("./icons/man.png")
+            world.PLAYER_CHAR: self.load_image("./icons/man.png"),
+            world.WALL_CHAR: self.load_image("./icons/wall.png"),
+            world.PLAYER1_CHAR: self.load_image("./icons/player1.png"),
+            world.PLAYER2_CHAR: self.load_image("./icons/player2.png"),
+            world.ENEMY1_CHAR: self.load_image("./icons/enemy1.png"),
+            world.ENEMY2_CHAR: self.load_image("./icons/enemy2.png")
         }
         self.refresh()
         self.root.mainloop()
@@ -64,8 +69,9 @@ class GUI:
 
 
 if __name__ == "__main__":
-    player = world.Agent(world.PLAYER_CHAR)
-    world1 = world.World(bilbo=player,obstacle=True).world
+    # player = world.Agent(world.PLAYER_CHAR)
+    world1 = world.WORLD
+    # world1 = world.World(bilbo=player,obstacle=True).world
     GUI(w=world1)
-    for i in range(3):
-        player.move(player.random_action())()
+    # for i in range(3):
+    #     player.move(player.random_action())()
