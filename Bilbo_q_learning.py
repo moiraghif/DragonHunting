@@ -12,8 +12,8 @@ d = {TREASURE_CHAR: '16',
      DRAGON_CHAR: '10',
      OBSTACLE_CHAR: '20'}
 
-TOT_EPISODES=100
-MAX_EPOCH = 500
+TOT_EPISODES=75
+MAX_EPOCH = 1000
 
 #initalize the q_table:
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
@@ -25,13 +25,13 @@ for y in range(WORLD_DIM):
         q_table[(y,x),exist_reward]=[0,0,0,0]
 
 
-alpha = 0.5
+alpha = 0.2
 gamma = 0.3
 epsilon = 0.2
 decay_epsilon = 0.99
 rewards = []
 
-fig = plt.figure(figsize=(10,10))
+fig = plt.figure(figsize=(20,20))
 for ep in range(TOT_EPISODES):
   #recreate the environment
     bilbo=QLearningAgent(PLAYER_CHAR)
@@ -62,7 +62,7 @@ for ep in range(TOT_EPISODES):
       if reward == -50:
         new_q_val = reward
       elif epoch == MAX_EPOCH:
-        reward = -50
+        reward = -49
       elif new_state==current_state:
         #any kind of obtacle which made bilbo not move
         new_q_val = -10 #-10 in case of obstacle
@@ -81,27 +81,61 @@ for ep in range(TOT_EPISODES):
       #print(bilbo.reward())
       #os.system( 'clear' )
 
-      if ep == TOT_EPISODES-1: #LAST EPISODE
-          env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)  # starts an rbg of our size
-          if mondo.get_position(TREASURE_CHAR):
-            env[WORLD_DIM - 1  - mondo.get_position(TREASURE_CHAR)[0],mondo.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
-          if mondo.get_position(PLAYER_CHAR):
-            env[WORLD_DIM - 1 - mondo.get_position(PLAYER_CHAR)[0],mondo.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
-          env[WORLD_DIM - 1 - mondo.get_position(DRAGON_CHAR)[0],mondo.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
-          obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
-          for coord in obstacles:
-                  env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
-          title = "Epoch: " + str(epoch) + ", Epsilon: " + str(round(epsilon,2)) + ", Reward: " + str(reward)
-          titles.append(title)
-          anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
+      #if ep == TOT_EPISODES-1: #LAST EPISODE
+        #  env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
+         # if mondo.get_position(TREASURE_CHAR):
+        #    env[WORLD_DIM - 1  - mondo.get_position(TREASURE_CHAR)[0],mondo.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
+         # if mondo.get_position(PLAYER_CHAR):
+        #    env[WORLD_DIM - 1 - mondo.get_position(PLAYER_CHAR)[0],mondo.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
+         # env[WORLD_DIM - 1 - mondo.get_position(DRAGON_CHAR)[0],mondo.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
+         # obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
+         # for coord in obstacles:
+        #          env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+         # title = "Epoch: " + str(epoch) + ", Epsilon: " + str(round(epsilon,4)) + ", Reward: " + str(reward)
+         # titles.append(title)
+         # anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
 
 
     epsilon *= decay_epsilon
-    print(ep)
+    print("episode: ", ep, " epoch used:", epoch, " final reward: ", reward ," epsilon: ", round(epsilon,4))
 
 #ipdb.set_trace()
 
-im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=None,#put = 0 if you want to repeat
+#testing_phase
+bilbo=QLearningAgent(PLAYER_CHAR)
+mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
+#print(World)
+#do Q-stuff
+#print(bilbo.get_pos())
+game_ended=False
+epoch = 0
+anim = []
+titles = []
+rewards = 0
+while not game_ended and epoch < MAX_EPOCH:
+  epoch += 1
+  action = bilbo.get_action(0,q_table,possible_moves)
+  bilbo.move(inverse_possible_moves[action])()
+  game_ended = bilbo.game_ended()
+  reward = bilbo.reward()
+  rewards = rewards + reward
+
+  env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
+  if mondo.get_position(TREASURE_CHAR):
+    env[WORLD_DIM - 1  - mondo.get_position(TREASURE_CHAR)[0],mondo.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
+  if mondo.get_position(PLAYER_CHAR):
+    env[WORLD_DIM - 1 - mondo.get_position(PLAYER_CHAR)[0],mondo.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
+  env[WORLD_DIM - 1 - mondo.get_position(DRAGON_CHAR)[0],mondo.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
+  obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
+  for coord in obstacles:
+          env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+  title = "Epoch: " + str(epoch) + ", Total Reward: " + str(rewards)
+  titles.append(title)
+  anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
+
+
+
+im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=1000,#put = 0 if you want to repeat
                                    blit=True)
 
 plt.axis('off')
