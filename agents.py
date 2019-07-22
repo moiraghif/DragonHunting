@@ -1,9 +1,12 @@
 import numpy as np
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation, Dropout
 
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
+
 
 class Agent:
     def __init__(self, char):
@@ -15,6 +18,8 @@ class Agent:
                              ["up", "down", "left", "right"]))
         # a list of actions (functions) that the Agent can do
         self.actions = movements + []
+        self.action_size = len(self.actions)
+        self.function_memory = []
 
     def initialize_world(self, world):
         self.world = world
@@ -36,6 +41,7 @@ class Agent:
             y = -1
         else:
             raise Exception(str(d) + "is not a valid direction")
+        #self.remember_move(lambda: self.world.move_of(self, y=y, x=x))
         return lambda: self.world.move_of(self, y=y, x=x)
 
     def random_action(self):
@@ -64,6 +70,12 @@ class Agent:
             return self.char == other.char
         except NameError:
             return False
+
+    def remember_move(self,move):
+        self.function_memory.append(move)
+
+    def return_memory(self):
+        return self.function_memory
 
 
 class QLearningAgent(Agent):
@@ -94,5 +106,41 @@ class QLearningAgent(Agent):
         return self.world.reward()
 
 class DeepQLearningAgent(Agent):
-    def learning_function(self):
-        pass
+
+    def __init__(self,char,input_shape):
+        super().__init__(self,char)
+        self.q_nn = self.initialize_nn(input_shape=3)
+
+    def learning_function(self,alpha,gamma,x_old,reward,x_new):
+        return ((1-alpha) * x_old + alpha*(reward + gamma*x_new))
+
+    def get_current_coordinate(self):
+        """
+        Get the current state from the current world
+        it is used as a index for the q-table and input for deep-q
+        """
+        return(self.world.get_state())
+
+    def treasure_gone(self):
+        return (self.world.treasure_gone())
+
+    def get_action(self,epsilon,q_table,possible_moves):
+        if np.random.uniform(0,1) < epsilon:
+            action = possible_moves[self.random_action()]
+        else:
+            action = np.argmax(self.q_nn.predict(self.get_current_coordinate(),
+                                                  self.treasure_gone()))
+        return(action)
+    def game_ended(self):
+        return(not self.world.game_state() == 0)
+
+    def reward(self):
+        return self.world.reward()
+    def initalize_nn(self,input_shape):
+        model = Sequential()
+        model.add(Dense(12, input_dim=input_shape, activation='relu'))
+        model.add(Dense(10, activation='relu'))
+        model.add(Dense(self.action_size, activation='linear'))
+        model.compile(loss='mse',
+                      optimizer='adam')
+        return model

@@ -3,12 +3,18 @@ import re
 #import ipdb
 from agents import *
 
-WORLD_DIM=15
+WORLD_DIM=20
 DRAGON_CHAR = '☠'
+DRAGON_PENALTY = 500
 TREASURE_CHAR = '♚'
+TREASURE_REWARD = 1000
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 OBSTACLE_CONST = 0.12
+OBSTACLE_PENALTY = 10
+
+WALKING_PENALTY = 1
+TOO_MUCH_WALK_PENALTY = 49
 
 class World:
     def __init__(self, dim_x=WORLD_DIM, dim_y=None,bilbo=None,entrance=(0,0),obstacle=False):
@@ -20,7 +26,7 @@ class World:
             self.dim_y = dim_x
         self.player= bilbo
         bilbo.initialize_world(self)
-        self.exit  = entrance
+        self.exit = entrance
         self.world = np.array([["" for x in range(self.dim_x)]
                                for y in range(self.dim_y)])
         #making the obstacles options
@@ -64,11 +70,11 @@ class World:
     def reward(self):
     	game_state = self.game_state()
     	if game_state==1:
-    		return 1000
+    		return TREASURE_REWARD
     	elif game_state==2:
-    		return -50
+    		return -DRAGON_PENALTY
     	else:
-    		return -1
+    		return -WALKING_PENALTY
 
     def is_border(self, pos):
         """Check if the cell is borderline:

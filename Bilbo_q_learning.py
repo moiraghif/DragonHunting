@@ -12,8 +12,8 @@ d = {TREASURE_CHAR: '16',
      DRAGON_CHAR: '10',
      OBSTACLE_CHAR: '20'}
 
-TOT_EPISODES=75
-MAX_EPOCH = 1000
+TOT_EPISODES=1300
+MAX_EPOCH = 3000
 
 #initalize the q_table:
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
@@ -25,10 +25,10 @@ for y in range(WORLD_DIM):
         q_table[(y,x),exist_reward]=[0,0,0,0]
 
 
-alpha = 0.2
+alpha = 1
 gamma = 0.3
-epsilon = 0.2
-decay_epsilon = 0.99
+epsilon = 0.4
+decay_epsilon = 0.997
 rewards = []
 
 fig = plt.figure(figsize=(20,20))
@@ -36,6 +36,7 @@ for ep in range(TOT_EPISODES):
   #recreate the environment
     bilbo=QLearningAgent(PLAYER_CHAR)
     mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
+    np.random.seed()
     #print(World)
     #do Q-stuff
     #print(bilbo.get_pos())
@@ -47,7 +48,7 @@ for ep in range(TOT_EPISODES):
       #the near it gets to the dragon the more random the movement
       epoch += 1
       epsilon_fear = bilbo.fear(epsilon)
-      action = bilbo.get_action(epsilon,q_table,possible_moves)
+      action = bilbo.get_action(epsilon_fear,q_table,possible_moves)
       current_state = bilbo.get_current_state()
       treasure_gone = bilbo.treasure_gone()
 
@@ -59,13 +60,13 @@ for ep in range(TOT_EPISODES):
       game_ended = bilbo.game_ended()
       reward = bilbo.reward()
 
-      if reward == -50:
+      if reward == -DRAGON_PENALTY:
         new_q_val = reward
       elif epoch == MAX_EPOCH:
-        reward = -49
+        reward = -TOO_MUCH_WALK_PENALTY
       elif new_state==current_state:
         #any kind of obtacle which made bilbo not move
-        new_q_val = -10 #-10 in case of obstacle
+        new_q_val = -OBSTACLE_PENALTY #-10 in case of obstacle
       else:
         next_q_val = np.max(q_table[new_state,treasure_gone])
         new_q_val = bilbo.learning_function(alpha,gamma,old_q_val,reward,next_q_val)
@@ -97,7 +98,8 @@ for ep in range(TOT_EPISODES):
 
 
     epsilon *= decay_epsilon
-    print("episode: ", ep, " epoch used:", epoch, " final reward: ", reward ," epsilon: ", round(epsilon,4))
+    print("episode: ", ep, " epoch used:", epoch, " final reward: ",
+            reward ," epsilon: ", round(epsilon,4))
 
 #ipdb.set_trace()
 
@@ -110,11 +112,24 @@ mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
 game_ended=False
 epoch = 0
 anim = []
-titles = []
 rewards = 0
+
+#The First frame
+env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
+if mondo.get_position(TREASURE_CHAR):
+  env[WORLD_DIM - 1  - mondo.get_position(TREASURE_CHAR)[0],mondo.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
+if mondo.get_position(PLAYER_CHAR):
+  env[WORLD_DIM - 1 - mondo.get_position(PLAYER_CHAR)[0],mondo.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
+env[WORLD_DIM - 1 - mondo.get_position(DRAGON_CHAR)[0],mondo.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
+obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
+for coord in obstacles:
+        env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
+
 while not game_ended and epoch < MAX_EPOCH:
   epoch += 1
   action = bilbo.get_action(0,q_table,possible_moves)
+  #ipdb.set_trace()
   bilbo.move(inverse_possible_moves[action])()
   game_ended = bilbo.game_ended()
   reward = bilbo.reward()
@@ -129,17 +144,20 @@ while not game_ended and epoch < MAX_EPOCH:
   obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
   for coord in obstacles:
           env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
-  title = "Epoch: " + str(epoch) + ", Total Reward: " + str(rewards)
-  titles.append(title)
   anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
 
 
 
+title = "Epoch: " + str(epoch) + ", Total Reward: " + str(rewards) + ", taining episodes: " + str(TOT_EPISODES)
+print(title)
+print(mondo.get_state(),mondo.treasure_gone())
 im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=1000,#put = 0 if you want to repeat
                                    blit=True)
-
+writer = animation.FFMpegWriter(fps=45)
+print("Writing video on your FS")
+im_ani.save('animation_video.mp4',writer=writer)
 plt.axis('off')
-plt.title(titles[-1])
-plt.show()
+plt.title(title)
+#plt.show()
 print("Atlast the episilon value was ", epsilon)
 #print(mondo)
