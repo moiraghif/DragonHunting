@@ -1,14 +1,18 @@
 from CreateBilboWorld import *
 import numpy as np
-from importlib import reload
+#from importlib import reload
 import ipdb
 from agents import *
-from IPython.display import clear_output
-from time import sleep
 import os
 
-def clear():
-  os.system( 'clear' )
+
+import matplotlib.pyplot as plt  # for graphing our mean rewards over time
+import matplotlib.animation as animation
+
+d = {TREASURE_CHAR: '1',  # blueish color
+     PLAYER_CHAR: '2',  # green
+     DRAGON_CHAR: '3',# red
+     OBSTACLE_CHAR: '4'}
 
 TOT_EPISODES=100
 MAX_EPOCH = 500
@@ -29,21 +33,22 @@ epsilon = 0.2
 decay_epsilon = 0.99
 rewards = []
 
+fig = plt.figure(figsize=(10,10))
 for ep in range(TOT_EPISODES):
   #recreate the environment
-  bilbo=QLearningAgent(PLAYER_CHAR)
-  mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
-  #print(World)
-  #do Q-stuff
-  #print(bilbo.get_pos())
-  game_ended=False
-  epoch = 0
-  try:
+    bilbo=QLearningAgent(PLAYER_CHAR)
+    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
+    #print(World)
+    #do Q-stuff
+    #print(bilbo.get_pos())
+    game_ended=False
+    epoch = 0
+    anim = []
     while not game_ended and epoch < MAX_EPOCH:
       #the near it gets to the dragon the more random the movement
       epoch += 1
       epsilon_fear = bilbo.fear(epsilon)
-      action = bilbo.get_action(epsilon_fear,q_table,possible_moves)
+      action = bilbo.get_action(epsilon,q_table,possible_moves)
       current_state = bilbo.get_current_state()
       treasure_gone = bilbo.treasure_gone()
 
@@ -69,23 +74,34 @@ for ep in range(TOT_EPISODES):
       q_table[current_state,treasure_gone][action] = new_q_val
 
 
-    if ep % 10 == 0:
+#    if ep % 10 == 0:
       #print("epoch ", epoch)
       #print(mondo)
-      print(bilbo.get_current_state(),bilbo.treasure_gone(),bilbo.game_ended())
-      print("epoch used: ",epoch, " ep:", ep)
-      print(bilbo.reward())
-      clear()
-      #sleep(1)
-    #sleep(1)
+      #print(bilbo.get_current_state(),bilbo.treasure_gone(),bilbo.game_ended())
+      #print("epoch used: ",epoch, " ep:", ep)
+      #print(bilbo.reward())
+      #os.system( 'clear' )
+
+      if ep == TOT_EPISODES-1: #LAST EPISODE
+          env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)  # starts an rbg of our size
+          if mondo.get_position(TREASURE_CHAR):
+            env[WORLD_DIM - 1  - mondo.get_position(TREASURE_CHAR)[0],mondo.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
+          if mondo.get_position(PLAYER_CHAR):
+            env[WORLD_DIM - 1 - mondo.get_position(PLAYER_CHAR)[0],mondo.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
+          env[WORLD_DIM - 1 - mondo.get_position(DRAGON_CHAR)[0],mondo.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
+          obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
+          for coord in obstacles:
+                  env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+          anim.append((plt.pcolor(env),))
+
+
+
     epsilon *= decay_epsilon
-  except:
-    #had some issues with some index can be removed later
-    #kept it in case there were some errors it's easier to debug
-    print("Ops! Something went wrong!")
-    ipdb.set_trace()
+    print(ep)
 
+im_ani = animation.ArtistAnimation(fig, anim, interval=50, repeat_delay=None,#put = 0 if you want to repeat
+                                   blit=True)
 
-#print(q_table)
+plt.show()
 print("Atlast the episilon value was ", epsilon)
 #print(mondo)
