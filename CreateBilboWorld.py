@@ -64,7 +64,7 @@ class World:
     def reward(self):
     	game_state = self.game_state()
     	if game_state==1:
-    		return 20
+    		return 1000
     	elif game_state==2:
     		return -50
     	else:
