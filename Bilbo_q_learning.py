@@ -3,7 +3,6 @@ import numpy as np
 import ipdb
 from agents import *
 import os
-
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -21,8 +20,8 @@ d = {TREASURE_CHAR: '16',
 #MAX_EPOCH=3000
 
 # In case of 25x25
-TOT_EPISODES=10_000
-MAX_EPOCH=3000
+TOT_EPISODES=5
+MAX_EPOCH=800
 
 #initalize the q_table:
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
@@ -36,8 +35,8 @@ for y in range(WORLD_DIM):
 
 alpha = 0.5
 gamma = 0.8
-epsilon = 0.4
-decay_epsilon = 0.999
+epsilon = 0.2
+decay_epsilon = 0.99
 rewards = []
 
 fig = plt.figure(figsize=(20,20))
@@ -101,15 +100,7 @@ anim = []
 rewards = 0
 
 #The First frame
-env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
-if mondo.get_position(TREASURE_CHAR):
-  env[WORLD_DIM - 1  - mondo.get_position(TREASURE_CHAR)[0],mondo.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
-if mondo.get_position(PLAYER_CHAR):
-  env[WORLD_DIM - 1 - mondo.get_position(PLAYER_CHAR)[0],mondo.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
-env[WORLD_DIM - 1 - mondo.get_position(DRAGON_CHAR)[0],mondo.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
-obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
-for coord in obstacles:
-        env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+env = mondo.create_env(d)
 anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
 
 while not game_ended and epoch < MAX_EPOCH:
@@ -121,15 +112,7 @@ while not game_ended and epoch < MAX_EPOCH:
   reward = bilbo.reward()
   rewards = rewards + reward
 
-  env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
-  if mondo.get_position(TREASURE_CHAR):
-    env[WORLD_DIM - 1  - mondo.get_position(TREASURE_CHAR)[0],mondo.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
-  if mondo.get_position(PLAYER_CHAR):
-    env[WORLD_DIM - 1 - mondo.get_position(PLAYER_CHAR)[0],mondo.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
-  env[WORLD_DIM - 1 - mondo.get_position(DRAGON_CHAR)[0],mondo.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
-  obstacles = np.argwhere(mondo.world==OBSTACLE_CHAR)
-  for coord in obstacles:
-          env[WORLD_DIM - 1 - coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+  env = mondo.create_env(d)
   anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
 
 
@@ -143,8 +126,9 @@ im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=1000,
 writer = animation.FFMpegWriter(fps=45)
 
 print("Writing video on your FS")
-im_ani.save('animation_video.mp4',writer=writer)
-
+#im_ani.save('animation_video.mp4',writer=writer)
+ax = plt.gca()
+ax.invert_yaxis()
 plt.axis('off')
 plt.title(title)
-#plt.show()
+plt.show()

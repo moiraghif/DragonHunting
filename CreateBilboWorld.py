@@ -1,9 +1,9 @@
 import numpy as np
 import re
-#import ipdb
 from agents import *
+from PIL import Image
 
-WORLD_DIM=25
+WORLD_DIM=15
 DRAGON_CHAR = '☠'
 DRAGON_PENALTY = 500
 TREASURE_CHAR = '♚'
@@ -150,6 +150,34 @@ class World:
         return re.sub(OBSTACLE_CHAR + r"\s" + OBSTACLE_CHAR,
                       3 * OBSTACLE_CHAR, txt)
 
+    def create_env(self,d):
+        '''
+        Creates an enviroment with the background consisting of zeros and
+        everything else is mapped according to the dictionary, this is used
+        for the animation with matplotlib and to create image with self.get_image
+        '''
+        env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
+        if self.get_position(TREASURE_CHAR):
+          env[self.get_position(TREASURE_CHAR)[0],self.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
+        if self.get_position(PLAYER_CHAR):
+          env[self.get_position(PLAYER_CHAR)[0],self.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
+        env[self.get_position(DRAGON_CHAR)[0],self.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
+        obstacles = np.argwhere(self.world==OBSTACLE_CHAR)
+        for coord in obstacles:
+                env[coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+        return env
+
+    def get_image(self,d):
+        '''
+        Creates an image that can be used by the deep q learning network
+        if you want to resize just do .resize((dim1,dim2)) to the
+        recieved object and use .show() to see it
+        '''
+        env = self.create_env(d)
+        env = env*(255/np.max(env))
+        #scale everything between 0 and 255
+        img = Image.fromarray(env) #255 max color
+        return img
 
 
 if __name__=='__main__':
