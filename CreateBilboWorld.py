@@ -3,7 +3,7 @@ import re
 #import ipdb
 from agents import *
 
-WORLD_DIM=20
+WORLD_DIM=25
 DRAGON_CHAR = '☠'
 DRAGON_PENALTY = 500
 TREASURE_CHAR = '♚'

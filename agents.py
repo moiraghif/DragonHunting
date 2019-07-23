@@ -80,7 +80,7 @@ class Agent:
 
 class QLearningAgent(Agent):
     def learning_function(self,alpha,gamma,x_old,reward,x_new):
-        return ((1-alpha) * x_old + alpha*(reward + gamma*x_new))
+        return (x_old + alpha*(reward + gamma*x_new - x_old))
 
     def get_current_state(self):
         """
