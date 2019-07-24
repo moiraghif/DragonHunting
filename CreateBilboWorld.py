@@ -60,7 +60,7 @@ class World:
         "Is the game finished? In that case, return the True"
         #will be the
         #if the coin is eaten and he is at the exit again
-        if ((not self.get_position(TREASURE_CHAR)) and (self.get_position(self.player.char)==self.exit)):#(get_position(self.player.char)==entrance)):
+        if ((not self.get_position(TREASURE_CHAR))): #and (self.get_position(self.player.char)==self.exit)):#(get_position(self.player.char)==entrance)):
         	return 1 #means he won
         #BILBO was eaten
         elif (not self.get_position(PLAYER_CHAR)):
@@ -178,6 +178,10 @@ class World:
         #scale everything between 0 and 255
         img = Image.fromarray(env) #255 max color
         return img
+
+    def deep_normalized_state(self,d):
+        env = self.create_env(d)
+        return env/np.max(env)
 
 
 if __name__=='__main__':
