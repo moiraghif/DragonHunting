@@ -1,27 +1,26 @@
 from CreateBilboWorld import *
 import numpy as np
-from importlib import reload
 import ipdb
 from agents import *
 import os
 
-TOT_EPISODES=1000
-MAX_EPOCH = 800
+TOT_EPISODES=200
+MAX_EPOCH = 3000
 
-#initalize the q_table:
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
 inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
 
 
 alpha = 0.5
 gamma = 0.3
-epsilon = 0.2
-decay_epsilon = 0.99
+epsilon = 1
+decay_epsilon = 0.97
 rewards = []
+
+bilbo=DeepQLearningAgent(PLAYER_CHAR)
 
 for ep in range(TOT_EPISODES):
     #recreate the environment
-    bilbo=DeepQLearningAgent(PLAYER_CHAR)
     mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
     #do deep Q-stuff
     game_ended=False
@@ -41,9 +40,9 @@ for ep in range(TOT_EPISODES):
         #treasure_gone = bilbo.treasure_gone()
         game_ended = bilbo.game_ended()
         #reward = bilbo.reward()
-        bilbo.add_knowledge((current_state,action,reward,new_state,game_ended))
+        bilbo.add_knowledge((current_state,action,reward,new_state,game_ended,epoch))
 
-        bilbo.train(gamma)
+        bilbo.train(gamma,MAX_EPOCH)
         #print("ep: ",ep ," epoch: ", epoch)
 
     ep += 1

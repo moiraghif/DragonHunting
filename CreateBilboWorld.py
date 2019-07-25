@@ -179,9 +179,19 @@ class World:
         img = Image.fromarray(env) #255 max color
         return img
 
-    def deep_normalized_state(self,d):
+    def deep_normalized_state(self,d,image=False):
         env = self.create_env(d)
-        return env/np.max(env)
+        if image:
+            return env/np.max(env)
+        else:
+            if not self.get_position(PLAYER_CHAR):
+                return (np.array([self.get_position(DRAGON_CHAR)[0],
+                                self.get_position(DRAGON_CHAR)[1],
+                                self.treasure_gone()]))
+            else:
+                return (np.array([self.get_position(PLAYER_CHAR)[0],
+                            self.get_position(PLAYER_CHAR)[1],
+                            self.treasure_gone()]))
 
 
 if __name__=='__main__':
