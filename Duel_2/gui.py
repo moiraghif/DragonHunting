@@ -2,6 +2,7 @@ import constants
 import threading
 import time
 import tkinter as tk
+import numpy as np
 from PIL import Image, ImageTk
 
 
@@ -25,8 +26,8 @@ class GUI:
             constants.ENEMY1_CHAR: self.load_image("enemy1.png"),
             constants.ENEMY2_CHAR: self.load_image("enemy2.png")
         }
-        self.blood_pic = self.load_image("blood.png")
-        self.rip_pic = self.load_image("rip.png")
+        self.blood = self.load_image("blood.png")
+        self.rip = self.load_image("rip.png")
         self.players = dict()
         self.refresh()
         threading.Thread(target=self.start).start()
@@ -71,28 +72,34 @@ class GUI:
 
     def start(self, iterations=10000):
         TIME = 0.1
+        alive = {p: True for p in self.world.players.keys()}
         for epoch in range(iterations):
-            for p in self.world.players.keys():
-                pos = self.world.players[p]
-                other = self.world.get_enemy(p)
-                other_healt = other.healt
-                reward, done = p.get_action()
-                delta = self.world.players[p] - pos
-                delta_healt = other.healt - other_healt
-                if done:
-                    pos = (pos * self.size)[::-1]
+            for p in alive.keys():
+                if p.healt == 0:
+                    alive[p] = False
+                    pos = (self.world.players[p] * self.size)[::-1]
                     self.draw.delete(self.players[p.char])
                     self.draw.create_image((*pos),
                                            anchor=tk.NW,
-                                           image=self.rip_pic)
-                    return
-                if delta_healt != 0:
-                    other_pos = (self.size * self.world.players[other])[::-1]
-                    blood = self.draw.create_image((*other_pos),
-                                                   anchor=tk.NW,
-                                                   image=self.blood_pic)
+                                           image=self.rip)
+                    continue
+                pos = self.world.players[p]
+                healts0 = {p: p.healt for p in self.world.players.keys()}
+                reward, done = p.get_action()
+                delta_pos = self.world.players[p] - pos
+                healts = {p: p.healt for p in self.world.players.keys()}
+                if all(delta_pos == 0):
+                    for agent, healt in healts.items():
+                        if healts0[agent] - healt > 0:
+                            o_pos = (self.size * self.world.players[agent])
+                            blood = self.draw.create_image((*o_pos[::-1]),
+                                                           anchor=tk.NW,
+                                                           image=self.blood)
+                            time.sleep(TIME)
+                            self.draw.delete(blood)
+                else:
+                    self.move_agent(p, delta_pos)
                     time.sleep(TIME)
-                    self.draw.delete(blood)
-                elif any(delta != 0):
-                    self.move_agent(p, delta)
-                    time.sleep(TIME)
+            if np.sum(np.array([v for k, v in alive.items()])) == 1:
+                return
+        return
