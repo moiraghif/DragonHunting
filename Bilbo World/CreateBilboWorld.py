@@ -1,14 +1,20 @@
 import numpy as np
 import re
-#import ipdb
 from agents import *
+from PIL import Image
 
 WORLD_DIM=15
 DRAGON_CHAR = '☠'
+DRAGON_PENALTY = 500
 TREASURE_CHAR = '♚'
+TREASURE_REWARD = 1000
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 OBSTACLE_CONST = 0.12
+OBSTACLE_PENALTY = 10
+
+WALKING_PENALTY = 1
+TOO_MUCH_WALK_PENALTY = 49
 
 class World:
     def __init__(self, dim_x=WORLD_DIM, dim_y=None,bilbo=None,entrance=(0,0),obstacle=False):
@@ -20,7 +26,7 @@ class World:
             self.dim_y = dim_x
         self.player= bilbo
         bilbo.initialize_world(self)
-        self.exit  = entrance
+        self.exit = entrance
         self.world = np.array([["" for x in range(self.dim_x)]
                                for y in range(self.dim_y)])
         #making the obstacles options
@@ -54,7 +60,7 @@ class World:
         "Is the game finished? In that case, return the True"
         #will be the
         #if the coin is eaten and he is at the exit again
-        if ((not self.get_position(TREASURE_CHAR)) and (self.get_position(self.player.char)==self.exit)):#(get_position(self.player.char)==entrance)):
+        if ((not self.get_position(TREASURE_CHAR))): #and (self.get_position(self.player.char)==self.exit)):#(get_position(self.player.char)==entrance)):
         	return 1 #means he won
         #BILBO was eaten
         elif (not self.get_position(PLAYER_CHAR)):
@@ -64,11 +70,11 @@ class World:
     def reward(self):
     	game_state = self.game_state()
     	if game_state==1:
-    		return 1000
+    		return TREASURE_REWARD
     	elif game_state==2:
-    		return -50
+    		return -DRAGON_PENALTY
     	else:
-    		return -1
+    		return -WALKING_PENALTY
 
     def is_border(self, pos):
         """Check if the cell is borderline:
@@ -144,6 +150,48 @@ class World:
         return re.sub(OBSTACLE_CHAR + r"\s" + OBSTACLE_CHAR,
                       3 * OBSTACLE_CHAR, txt)
 
+    def create_env(self,d):
+        '''
+        Creates an enviroment with the background consisting of zeros and
+        everything else is mapped according to the dictionary, this is used
+        for the animation with matplotlib and to create image with self.get_image
+        '''
+        env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
+        if self.get_position(TREASURE_CHAR):
+          env[self.get_position(TREASURE_CHAR)[0],self.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
+        if self.get_position(PLAYER_CHAR):
+          env[self.get_position(PLAYER_CHAR)[0],self.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
+        env[self.get_position(DRAGON_CHAR)[0],self.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
+        obstacles = np.argwhere(self.world==OBSTACLE_CHAR)
+        for coord in obstacles:
+                env[coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+        return env
+
+    def get_image(self,d):
+        '''
+        Creates an image that can be used by the deep q learning network
+        if you want to resize just do .resize((dim1,dim2)) to the
+        recieved object and use .show() to see it
+        '''
+        env = self.create_env(d)
+        env = env*(255/np.max(env))
+        #scale everything between 0 and 255
+        img = Image.fromarray(env) #255 max color
+        return img
+
+    def deep_normalized_state(self,d,image=False):
+        env = self.create_env(d)
+        if image:
+            return env/np.max(env)
+        else:
+            if not self.get_position(PLAYER_CHAR):
+                return (np.array([self.get_position(DRAGON_CHAR)[0],
+                                self.get_position(DRAGON_CHAR)[1],
+                                self.treasure_gone()]))
+            else:
+                return (np.array([self.get_position(PLAYER_CHAR)[0],
+                            self.get_position(PLAYER_CHAR)[1],
+                            self.treasure_gone()]))
 
 
 if __name__=='__main__':
