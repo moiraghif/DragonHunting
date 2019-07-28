@@ -24,7 +24,8 @@ class GUI:
             constants.PLAYER1_CHAR: self.load_image("player1.png"),
             constants.PLAYER2_CHAR: self.load_image("player2.png"),
             constants.ENEMY1_CHAR: self.load_image("enemy1.png"),
-            constants.ENEMY2_CHAR: self.load_image("enemy2.png")
+            constants.ENEMY2_CHAR: self.load_image("enemy2.png"),
+            constants.DRAGON_CHAR: self.load_image("dino.png")
         }
         self.blood = self.load_image("blood.png")
         self.rip = self.load_image("rip.png")
