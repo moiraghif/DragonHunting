@@ -90,7 +90,7 @@ class GUI:
                 healts = {p: p.healt for p in self.world.players.keys()}
                 if all(delta_pos == 0):
                     for agent, healt in healts.items():
-                        if healts0[agent] - healt > 0:
+                        if healts0[agent] - healt > 0 and healt > 0:
                             o_pos = (self.size * self.world.players[agent])
                             blood = self.draw.create_image((*o_pos[::-1]),
                                                            anchor=tk.NW,

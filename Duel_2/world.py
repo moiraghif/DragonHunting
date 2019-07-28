@@ -89,33 +89,32 @@ class World:
             if enemy.char != agent.char and enemy.alive()])
 
     def get_dist_to_enemies(self, agent):
-        try:
-            return np.min(np.array(
-                [nx.shortest_path_length(self.graph,
-                                         self.pos_to_node(self.players[agent]),
-                                         self.pos_to_node(self.players[enemy]))
-                 for enemy in [p for p in self.players.keys()
-                               if p.char != agent.char and p.alive()]]))
-        except ValueError:
-            return 0
-        except nx.exception.NodeNotFound:
-            return 0
+        enemies = [p for p in self.players.keys()
+                   if p.char != agent.char and p.alive()]
+        paths = np.array([nx.shortest_path_length(self.graph,
+                                                  self.pos_to_node(
+                                                      self.players[agent]),
+                                                  self.pos_to_node(
+                                                      self.players[enemy]))
+                          for enemy in enemies])
+        return np.min(paths) if len(paths) > 0 else 0
 
     def get_closer_enemy(self, agent):
-        try:
-            pos0 = self.pos_to_node(self.players[agent])
-            enemy_pos = [self.pos_to_node(k) for p, k in self.players.items()
-                         if p.char != agent.char and p.alive()]
-            pos = [nx.shortest_path(self.graph, pos0, e)
-                   for e in enemy_pos]
-            pos_len = np.array(list(map(len, pos)))
-            try:
-                min_pos = [np.array(list(map(int, p.split(" "))))
-                           for p in pos[np.argmin(pos_len)]]
-            except:
-                return 0, 0
-        except nx.exception.NodeNotFound:
+        # try:
+        pos0 = self.pos_to_node(self.players[agent])
+        enemy_pos = [self.pos_to_node(k) for p, k in self.players.items()
+                     if p.char != agent.char and p.alive()]
+        if not enemy_pos:
             return 0, 0
+        pos = [nx.shortest_path(self.graph, pos0, e)
+               for e in enemy_pos]
+        pos_len = np.array(list(map(len, pos)))
+        min_pos = [np.array(list(map(int, p.split(" "))))
+                   for p in pos[np.argmin(pos_len)]]
+        if not min_pos:
+            return 0, 0
+        # except nx.exception.NodeNotFound:
+        #     return 0, 0
         direction = min_pos[1] - min_pos[0]
         if direction[0] == +1:
             d = 0
@@ -130,10 +129,11 @@ class World:
     def do_action(self, agent, fn):
         if agent.healt > 0:
             return fn(), False
-        try:
-            self.graph.remove_node(self.pos_to_node(self.players[agent]))
-        except:
-            pass
+        if self.pos_to_node(self.players[agent]) in self.graph.nodes:
+            pos = self.pos_to_node(self.players[agent])
+            self.graph.remove_edges_from([n for n in self.graph.edges
+                                          if pos in n])
+            self.graph.remove_node(pos)
         return -10, True
 
     def save_qtable(self):

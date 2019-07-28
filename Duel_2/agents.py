@@ -50,6 +50,8 @@ class Agent:
         return np.argmax(self.qtable[direction, distance])
 
     def get_action(self, last_move=False):
+        if not self.alive():
+            return 0, True
         direction, distance = self.world.get_closer_enemy(self)
         fn = self.random_action() \
             if np.random.rand() < self.fear() * constants.EPSILON \
