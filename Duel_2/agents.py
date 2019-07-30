@@ -20,7 +20,7 @@ class Agent:
     def fear(self):
         try:
             return (1 / self.healt) * \
-                (1 / self.world.get_dist_to_enemies(self))
+                ((1 + self.world.get_dist_to_enemies(self)) / self.world.get_dist_to_enemies(self))
         except ZeroDivisionError:
             return 0
 
@@ -49,12 +49,12 @@ class Agent:
     def best_action(self, direction, distance):
         return np.argmax(self.qtable[direction, distance])
 
-    def get_action(self, last_move=False):
+    def get_action(self, last_move=False,epsilon=0):
         if not self.alive():
             return 0, True
         direction, distance = self.world.get_closer_enemy(self)
         fn = self.random_action() \
-            if np.random.rand() < self.fear() * constants.EPSILON \
+            if np.random.rand() < self.fear() * epsilon \
             else self.best_action(direction, distance)
         old_state = self.qtable[direction, distance, fn]
         reward, done = self.world.do_action(self, self.actions[fn])

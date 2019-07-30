@@ -5,14 +5,17 @@ import numpy as np
 
 
 MAX_EPOCHS = 200
-EPISODES = 100000
+EPISODES = 1000
+EPISILON_DECAY = 0.995
 
+epsilon = constants.EPSILON
 
 def reset():
     players = [agents.Agent(constants.PLAYER1_CHAR),
-               agents.Agent(constants.PLAYER2_CHAR)]
-               # agents.Agent(constants.ENEMY1_CHAR),
-               # agents.Agent(constants.ENEMY2_CHAR)]
+               agents.Agent(constants.PLAYER2_CHAR),
+               agents.Agent(constants.ENEMY1_CHAR),
+               agents.Agent(constants.ENEMY2_CHAR),
+               agents.Agent(constants.DRAGON_CHAR)]
     world1 = world.World(players, True)
     world1.save_qtable()
 
@@ -34,9 +37,10 @@ fix_epoch = print_max_length(MAX_EPOCHS)
 
 for episode in range(0, EPISODES):
     players = [agents.Agent(constants.PLAYER1_CHAR),
-               agents.Agent(constants.PLAYER2_CHAR)]
-               # agents.Agent(constants.ENEMY1_CHAR),
-               # agents.Agent(constants.ENEMY2_CHAR)]
+               agents.Agent(constants.PLAYER2_CHAR),
+               agents.Agent(constants.ENEMY1_CHAR),
+               agents.Agent(constants.ENEMY2_CHAR),
+               agents.Agent(constants.DRAGON_CHAR)]
     players_alive = {p: True for p in players}
     world1 = world.World(players, False)
     print("Episode {}".format(fix_episode(episode)), end="\r")
@@ -46,7 +50,7 @@ for episode in range(0, EPISODES):
         for p in players:
             if not players_alive[p]:
                 continue
-            reward, done = p.get_action(last_move)
+            reward, done = p.get_action(last_move,epsilon)
             if done:
                 players_alive[p] = False
                 b_done = np.sum(np.array([
