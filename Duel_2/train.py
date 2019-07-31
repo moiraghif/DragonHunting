@@ -5,8 +5,8 @@ import numpy as np
 
 
 MAX_EPOCHS = 200
-EPISODES = 2000
-EPISILON_DECAY = 0.997
+EPISODES = 100000
+EPISILON_DECAY = 0.99992
 
 epsilon = constants.EPSILON
 
