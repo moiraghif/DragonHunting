@@ -3,7 +3,6 @@ import re
 from agents import *
 from PIL import Image
 
-WORLD_DIM=15
 DRAGON_CHAR = '☠'
 DRAGON_PENALTY = 500
 TREASURE_CHAR = '♚'

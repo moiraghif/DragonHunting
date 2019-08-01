@@ -10,6 +10,12 @@ d = {TREASURE_CHAR: '16',
      DRAGON_CHAR: '10',
      OBSTACLE_CHAR: '20'}
 
+
+alpha = 0.5
+gamma = 0.8
+epsilon = 0.2
+decay_epsilon = 0.99
+
 #In case of 15x15
 #TOT_EPISODES=800
 #MAX_EPOCH=1_000
@@ -19,8 +25,19 @@ d = {TREASURE_CHAR: '16',
 #MAX_EPOCH=3000
 
 # In case of 25x25
-TOT_EPISODES=100
-MAX_EPOCH=800
+#TOT_EPISODES=400
+#MAX_EPOCH=1000
+
+# In case of 30x30
+#TOT_EPISODES=600
+#MAX_EPOCH=1000
+#epsilon = 0.3
+
+# In case of 50x50
+TOT_EPISODES=1500
+MAX_EPOCH=1500
+epsilon = 0.4
+decay_epsilon = 0.994
 
 #initalize the q_table:
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
@@ -33,13 +50,6 @@ q_table=np.array([[[0.0 for moves in possible_moves]
            for y in range(WORLD_DIM)]) \
            if not os.path.isfile(file_name + ".npy") \
            else np.load(file_name + ".npy")
-
-
-alpha = 0.5
-gamma = 0.8
-epsilon = 0.2
-decay_epsilon = 0.99
-rewards = []
 
 fig = plt.figure(figsize=(20,20))
 for ep in range(TOT_EPISODES):
@@ -125,10 +135,10 @@ print("Last state of bilbo: ", mondo.get_state(),mondo.treasure_gone())
 
 im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=1000,
                                    blit=True)
-writer = animation.FFMpegWriter(fps=45)
+writer = animation.FFMpegWriter(fps=30)
 
 print("Writing video on your FS")
-#im_ani.save('animation_video.mp4',writer=writer)
+im_ani.save('animation_video_50x50.mp4',writer=writer)
 ax = plt.gca()
 ax.invert_yaxis()
 plt.axis('off')

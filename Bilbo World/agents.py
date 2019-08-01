@@ -5,7 +5,7 @@ from collections import deque
 import random
 import ipdb
 
-WORLD_DIM = 15
+WORLD_DIM = 50
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
 PLAYER_CHAR = '☺'
