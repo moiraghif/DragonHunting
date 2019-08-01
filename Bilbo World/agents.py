@@ -104,8 +104,7 @@ class QLearningAgent(Agent):
         if np.random.uniform(0,1) < epsilon:
             action = possible_moves[self.random_action()]
         else:
-            action = np.argmax(q_table[self.get_current_state(),
-                                       self.treasure_gone()])
+            action = np.argmax(q_table[self.get_current_state()])
         return(action)
     def game_ended(self):
         return(not self.world.game_state() == 0)

@@ -1,6 +1,5 @@
 from CreateBilboWorld import *
 import numpy as np
-import ipdb
 from agents import *
 import os
 import matplotlib.pyplot as plt
@@ -20,17 +19,20 @@ d = {TREASURE_CHAR: '16',
 #MAX_EPOCH=3000
 
 # In case of 25x25
-TOT_EPISODES=5
+TOT_EPISODES=100
 MAX_EPOCH=800
 
 #initalize the q_table:
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
 inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
-q_table={}
-for y in range(WORLD_DIM):
-  for x in range(WORLD_DIM):
-    for exist_reward in [0,1]:
-        q_table[(y,x),exist_reward]=[0,0,0,0]
+
+file_name = "qtable_" + str(WORLD_DIM)
+
+q_table=np.array([[[0.0 for moves in possible_moves]
+           for x in range(WORLD_DIM)]
+           for y in range(WORLD_DIM)]) \
+           if not os.path.isfile(file_name + ".npy") \
+           else np.load(file_name + ".npy")
 
 
 alpha = 0.5
@@ -58,13 +60,13 @@ for ep in range(TOT_EPISODES):
       epsilon_fear = bilbo.fear(epsilon)
       action = bilbo.get_action(epsilon,q_table,possible_moves)
       current_state = bilbo.get_current_state()
-      treasure_gone = bilbo.treasure_gone()
+      #treasure_gone = bilbo.treasure_gone()
 
-      old_q_val = q_table[current_state,treasure_gone][action]
+      old_q_val = q_table[current_state][action]
       bilbo.move(inverse_possible_moves[action])()
 
       new_state = bilbo.get_current_state()
-      treasure_gone = bilbo.treasure_gone()
+      #treasure_gone = bilbo.treasure_gone()
       game_ended = bilbo.game_ended()
       reward = bilbo.reward()
 
@@ -72,15 +74,16 @@ for ep in range(TOT_EPISODES):
         new_q_val = reward
       elif epoch == MAX_EPOCH:
         reward = -TOO_MUCH_WALK_PENALTY
+        new_q_val = -TOO_MUCH_WALK_PENALTY
       elif new_state==current_state:
         #any kind of obtacle which made bilbo not move
         new_q_val = -OBSTACLE_PENALTY #-10 in case of obstacle
       else:
-        next_q_val = np.max(q_table[new_state,treasure_gone])
+        next_q_val = np.max(q_table[new_state])
         new_q_val = bilbo.learning_function(alpha,gamma,old_q_val,reward,next_q_val)
 
-      q_table[current_state,treasure_gone][action] = new_q_val
-
+      q_table[current_state][action] = new_q_val
+      #import ipdb; ipdb.set_trace()
 
     epsilon *= decay_epsilon
     print("episode: ", ep, " epoch used:", epoch, " final reward: ",
@@ -106,7 +109,6 @@ anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
 while not game_ended and epoch < MAX_EPOCH:
   epoch += 1
   action = bilbo.get_action(0,q_table,possible_moves)
-  #ipdb.set_trace()
   bilbo.move(inverse_possible_moves[action])()
   game_ended = bilbo.game_ended()
   reward = bilbo.reward()
@@ -115,7 +117,7 @@ while not game_ended and epoch < MAX_EPOCH:
   env = mondo.create_env(d)
   anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
 
-
+np.save(file_name,q_table)
 
 title = "Epoch: " + str(epoch) + ", Total Reward: " + str(rewards) + ", taining episodes: " + str(TOT_EPISODES)
 print(title)

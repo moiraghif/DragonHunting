@@ -131,8 +131,6 @@ class World:
     def get_state(self):
         "Return the state for the q-learning"
         player_pos = self.get_position(self.player.char)
-        treasure_state = self.treasure_gone()
-        game_ended = False if self.game_state()==0 else True
         return(player_pos)
 
 
