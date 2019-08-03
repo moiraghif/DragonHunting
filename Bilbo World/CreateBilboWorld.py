@@ -192,21 +192,22 @@ class World:
 
 
 if __name__=='__main__':
-	mondo=World(WORLD_DIM,WORLD_DIM)
-	print(mondo)
+    print('ok')
+	#mondo=World(WORLD_DIM,WORLD_DIM)
+	#print(mondo)
 
 	#seems working
-	for i in range(WORLD_DIM):
-		#move = mondo.random_move()
-		#print(move)
-		mondo.action('right')
-		print(mondo)
+	#for i in range(WORLD_DIM):
+	#	#move = mondo.random_move()
+	#	#print(move)
+	#	mondo.action('right')
+	#	print(mondo)
 
-	mondo.action('down')
-	print(mondo)
-	mondo.action('down')
-	print(mondo)
-	mondo.action('down')
-	print(mondo)
-	mondo.action('left')
-	print(mondo)
+	#mondo.action('down')
+	#print(mondo)
+	#mondo.action('down')
+	#print(mondo)
+	#mondo.action('down')
+	#print(mondo)
+	#mondo.action('left')
+	#print(mondo)
