@@ -1,17 +1,18 @@
 import numpy as np
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, save_model, load_model
 from tensorflow.keras.layers import Dense, Activation, Dropout, Conv2D,MaxPooling2D, Flatten
 from collections import deque
 import random
-import ipdb
+import os
+from time import sleep
 
-WORLD_DIM = 50
+WORLD_DIM = 15
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 
-MAX_MEMORY = 50000
+MAX_MEMORY = 100000
 MIN_MEMORY = 150
 
 
@@ -117,8 +118,6 @@ class DeepQLearningAgentImage(Agent):
     def __init__(self,char):
         super().__init__(char)
         self.q_nn = self.initialize_nn(input_shape=(WORLD_DIM,WORLD_DIM,1))
-        #self.predict_nn = self.initialize_nn(input_shape=(WORLD_DIM,WORLD_DIM,1))
-        #self.predict_nn.set_weights(self.q_nn.get_weights())
         self.map = {TREASURE_CHAR: '16',
                     PLAYER_CHAR: '5',
                     DRAGON_CHAR: '10',
@@ -141,7 +140,7 @@ class DeepQLearningAgentImage(Agent):
         if np.random.uniform(0,1) < epsilon:
             action = possible_moves[self.random_action()]
         else:
-            action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1,WORLD_DIM,WORLD_DIM,1)))
+            action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1,WORLD_DIM,WORLD_DIM,1))[0])
         return(action)
 
     def game_ended(self):
@@ -165,19 +164,42 @@ class DeepQLearningAgentImage(Agent):
             X_train.reshape(-1,X_train.shape[0],X_train.shape[1],1)
             model.fit(X_train,q_vals)
         '''
+        if os.path.isfile('deep_model.model'):
+            print('*******************************************')
+            print('*******************************************')
+            print('*Found an existent model, loading that one*')
+            print('*******************************************')
+            print('*******************************************')
+            #sleep(5)
+            model = load_model('deep_model.model')
+            print(model.summary())
+            return model
+
+        print('***************************************')
+        print('***************************************')
+        print('*No existent model, creating a new one*')
+        print('***************************************')
+        print('***************************************')
+        #sleep(5)
         model = Sequential()
         #input shape is (DIM,DIM,1) 1 beacause they are Black&White
-        model.add(Conv2D(32,(3,3), input_shape=input_shape, activation='relu'))
-        model.add(MaxPooling2D((2,2)))
-        model.add(Dropout(0.2))
-        model.add(Conv2D(16,(3,3), activation='relu'))
-        model.add(MaxPooling2D((2,2)))
-        model.add(Dropout(0.1)) # per evitare overfitting
-        model.add(Flatten())
+        #model.add(Conv2D(16,(3,3), input_shape=input_shape, activation='relu'))
+        #model.add(MaxPooling2D((2,2)))
+        #model.add(Dropout(0.2))
+        #model.add(Conv2D(16,(3,3), activation='relu'))
+        #model.add(MaxPooling2D((2,2)))
+        #model.add(Dropout(0.1)) # per evitare overfitting
+        model.add(Flatten(input_shape=input_shape))
+        #model.add(Dense(16,activation='relu'))
+        #second attempt
+        model.add(Dense(64,activation='relu'))
+        #model.add(Dense(32,activation='relu'))
         model.add(Dense(16,activation='relu'))
+
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
                       optimizer='adam')
+        print(model.summary())
         return model
 
     def add_knowledge(self, knowledge):
@@ -191,7 +213,7 @@ class DeepQLearningAgentImage(Agent):
 
 
 
-    def train(self,gamma):
+    def train(self,gamma,MAX_EPOCH):
 
         # Start training only if certain number of samples is already saved
         if len(self.memory) < MIN_MEMORY:
@@ -212,13 +234,15 @@ class DeepQLearningAgentImage(Agent):
         y = []
 
         # Now we need to enumerate our batches
-        for index, (current_state, action, reward, next_current_state, game_ended) in enumerate(minibatch):
+        for index, (current_state, action, reward, next_current_state, game_ended,epoch) in enumerate(minibatch):
             # almost like with Q Learning, but we use just part of equation here
             if game_ended:
                 new_q = reward
             elif (next_current_state==current_state).all():
                 #any kind of obtacle which made bilbo not move
-                new_q = -10 #-10 in case of obstacle
+                new_q = -100 #+ gamma * np.max(future_qs_list[index]) #in case of obstacle or wall
+            #elif epoch==MAX_EPOCH:
+            #    new_q = -2000
             else:
                 max_future_q = np.max(future_qs_list[index])
                 new_q = reward + gamma * max_future_q
@@ -233,8 +257,9 @@ class DeepQLearningAgentImage(Agent):
 
         #ipdb.set_trace()
         # Fit on all samples as one batch, log only on terminal state
-        self.q_nn.fit(np.array(X), np.array(y), batch_size=32, verbose=0, shuffle=False)
 
+        self.q_nn.fit(np.array(X), np.array(y), batch_size=32, verbose=0, shuffle=False)
+        #print('model should be saved now and the memory size is: ', len(self.memory))
         # Update target network counter every episode
         #if terminal_state:
         #    self.target_update_counter += 1
@@ -352,7 +377,7 @@ class DeepQLearningAgent(Agent):
                 #any kind of obtacle which made bilbo not move
                 new_q = -100 #-100 in case of obstacle
             elif epoch==MAX_EPOCH:
-                new_q = -2000
+                new_q = -49
             else:
                 max_future_q = np.max(future_qs_list[index])
                 new_q = reward + gamma * max_future_q
@@ -368,7 +393,8 @@ class DeepQLearningAgent(Agent):
         #ipdb.set_trace()
         # Fit on all samples as one batch, log only on terminal state
         self.q_nn.fit(np.array(X), np.array(y), batch_size=32, verbose=0, shuffle=False)
-
+        #print('model should be saved now and the memory size is: ', len(self.memory))
+        save_model(self.q_nn,'deep_model2.model')
         # Update target network counter every episode
         #if terminal_state:
         #    self.target_update_counter += 1

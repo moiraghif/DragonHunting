@@ -10,13 +10,13 @@ TREASURE_REWARD = 1000
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 OBSTACLE_CONST = 0.12
-OBSTACLE_PENALTY = 10
+OBSTACLE_PENALTY = 100
 
 WALKING_PENALTY = 1
 TOO_MUCH_WALK_PENALTY = 49
 
 class World:
-    def __init__(self, dim_x=WORLD_DIM, dim_y=None,bilbo=None,entrance=(0,0),obstacle=False):
+    def __init__(self, dim_x=WORLD_DIM, dim_y=None,bilbo=None,entrance=False,obstacle=False):
         "Create a new World"
         self.dim_x = dim_x
         if dim_y:
@@ -25,7 +25,6 @@ class World:
             self.dim_y = dim_x
         self.player= bilbo
         bilbo.initialize_world(self)
-        self.exit = entrance
         self.world = np.array([["" for x in range(self.dim_x)]
                                for y in range(self.dim_y)])
         #making the obstacles options
@@ -33,13 +32,29 @@ class World:
         	np.random.seed(seed=1234)
         	self.insert_obstacles()
         #the position can be changed later
-        self.world[round(self.dim_x / 2)-1, self.dim_x-3] = DRAGON_CHAR
-        self.world[round(self.dim_x / 2)-1,self.dim_x-1] = TREASURE_CHAR
-        self.world[entrance] = PLAYER_CHAR
+        self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
+        self.world[round(self.dim_y/2)-1, dim_x-1] = TREASURE_CHAR
+        bilbo_entrance = self.create_entrance(entrance)
+        self.world[bilbo_entrance] = PLAYER_CHAR
 
         #this should be in agent class
         self.possible_moves = {1:'up',2:'down',3:'right',4:'left'}
 
+    def create_entrance(self,entrance=False):
+        '''
+        check if user specified an entrance for biblo else will
+        create a new one where there are no obstacles or characters
+        '''
+        if not entrance:
+            np.random.seed(None)
+            x = np.random.randint(WORLD_DIM)
+            y = np.random.randint(WORLD_DIM)
+            if self.world[x,y] == '':
+                return (x,y)
+            else:
+                return self.create_entrance()
+        else:
+            return entrance
     def insert_obstacles(self):
         "Insert obstacles in the new world"
         for i in range(self.dim_x):
@@ -192,21 +207,22 @@ class World:
 
 
 if __name__=='__main__':
-	mondo=World(WORLD_DIM,WORLD_DIM)
-	print(mondo)
+    print('ok')
+	#mondo=World(WORLD_DIM,WORLD_DIM)
+	#print(mondo)
 
 	#seems working
-	for i in range(WORLD_DIM):
-		#move = mondo.random_move()
-		#print(move)
-		mondo.action('right')
-		print(mondo)
+	#for i in range(WORLD_DIM):
+	#	#move = mondo.random_move()
+	#	#print(move)
+	#	mondo.action('right')
+	#	print(mondo)
 
-	mondo.action('down')
-	print(mondo)
-	mondo.action('down')
-	print(mondo)
-	mondo.action('down')
-	print(mondo)
-	mondo.action('left')
-	print(mondo)
+	#mondo.action('down')
+	#print(mondo)
+	#mondo.action('down')
+	#print(mondo)
+	#mondo.action('down')
+	#print(mondo)
+	#mondo.action('left')
+	#print(mondo)
