@@ -140,7 +140,7 @@ class DeepQLearningAgentImage(Agent):
         if np.random.uniform(0,1) < epsilon:
             action = possible_moves[self.random_action()]
         else:
-            action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1,WORLD_DIM,WORLD_DIM,1)))
+            action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1,WORLD_DIM,WORLD_DIM,1))[0])
         return(action)
 
     def game_ended(self):
@@ -170,8 +170,9 @@ class DeepQLearningAgentImage(Agent):
             print('*Found an existent model, loading that one*')
             print('*******************************************')
             print('*******************************************')
-            sleep(5)
+            #sleep(5)
             model = load_model('deep_model.model')
+            print(model.summary())
             return model
 
         print('***************************************')
@@ -179,25 +180,26 @@ class DeepQLearningAgentImage(Agent):
         print('*No existent model, creating a new one*')
         print('***************************************')
         print('***************************************')
-        sleep(5)
+        #sleep(5)
         model = Sequential()
         #input shape is (DIM,DIM,1) 1 beacause they are Black&White
-        model.add(Conv2D(32,(3,3), input_shape=input_shape, activation='relu'))
-        model.add(MaxPooling2D((2,2)))
-        model.add(Dropout(0.2))
-        model.add(Conv2D(16,(3,3), activation='relu'))
-        model.add(MaxPooling2D((2,2)))
-        model.add(Dropout(0.1)) # per evitare overfitting
+        #model.add(Conv2D(16,(3,3), input_shape=input_shape, activation='relu'))
+        #model.add(MaxPooling2D((2,2)))
+        #model.add(Dropout(0.2))
+        #model.add(Conv2D(16,(3,3), activation='relu'))
+        #model.add(MaxPooling2D((2,2)))
+        #model.add(Dropout(0.1)) # per evitare overfitting
         model.add(Flatten(input_shape=input_shape))
-        model.add(Dense(16,activation='relu'))
-        #second attempt
-        #model.add(Dense(64,activation='relu'))
-        #model.add(Dense(32,activation='relu'))
         #model.add(Dense(16,activation='relu'))
+        #second attempt
+        model.add(Dense(64,activation='relu'))
+        #model.add(Dense(32,activation='relu'))
+        model.add(Dense(16,activation='relu'))
 
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
                       optimizer='adam')
+        print(model.summary())
         return model
 
     def add_knowledge(self, knowledge):
@@ -238,9 +240,9 @@ class DeepQLearningAgentImage(Agent):
                 new_q = reward
             elif (next_current_state==current_state).all():
                 #any kind of obtacle which made bilbo not move
-                new_q = -100 #-100 in case of obstacle or wall
-            elif epoch==MAX_EPOCH:
-                new_q = -2000
+                new_q = -100 #+ gamma * np.max(future_qs_list[index]) #in case of obstacle or wall
+            #elif epoch==MAX_EPOCH:
+            #    new_q = -2000
             else:
                 max_future_q = np.max(future_qs_list[index])
                 new_q = reward + gamma * max_future_q
