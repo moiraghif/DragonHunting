@@ -37,28 +37,28 @@ for ep in range(TOT_EPISODES):
     current_state=bilbo.get_state()
     initial = mondo.get_position(PLAYER_CHAR)
     while not game_ended and epoch < MAX_EPOCH:
-      #the near it gets to the dragon the more random the movement
+        #the near it gets to the dragon the more random the movement
         epoch += 1
-        #ipdb.set_trace()
         epsilon_fear = bilbo.fear(epsilon) if epsilon > epsilon_min else bilbo.fear(epsilon_min)
         action = bilbo.get_action(epsilon_fear,possible_moves)
-        #treasure_gone = bilbo.treasure_gone()
+
         bilbo.move(inverse_possible_moves[action])()
         reward = bilbo.reward()
 
         new_state = bilbo.get_state()
-        #treasure_gone = bilbo.treasure_gone()
         game_ended = bilbo.game_ended()
+        #reward = bilbo.reward()
+
 
         if reward==TREASURE_REWARD:
             won+=1
         if reward==-DRAGON_PENALTY:
             lost+=1
-        #reward = bilbo.reward()
-        bilbo.add_knowledge((current_state,action,reward,new_state,game_ended,epoch))
+            
+        bilbo.add_knowledge((current_state,action,reward,new_state,game_ended))
         current_state = new_state #Lol avevo dimenticato questo e non capivo perché preferisse sbattare contro i muri
-        bilbo.train(gamma,MAX_EPOCH)
-        #print("ep: ",ep ," epoch: ", epoch)
+        bilbo.train(gamma)
+
 
     ep += 1
     if ep % 1 == 0:
@@ -71,15 +71,13 @@ for ep in range(TOT_EPISODES):
     epsilon *= decay_epsilon
     #each 10 episode save the model
     if ep % 10 == 0:
-        save_model(bilbo.q_nn,'deep_model.model')
 
-#save the model again in case the episodes were not divisible by 10
-save_model(bilbo.q_nn,'deep_model.model')
-#print(q_table)
+        save_model(bilbo.q_nn,'deep_model_'+str(WORLD_DIM)+'.model')
+
+#save the model again in case the MAX_episodes was not divisible by 10
+save_model(bilbo.q_nn,'deep_model_'+str(WORLD_DIM)+'.model')
 print("Atlast the episilon value was ", epsilon)
-#print(mondo)
 
-#np.save('deep_learning_weights',bilbo.q_nn.get_weights())
 
 #testing
 fig = plt.figure(figsize=(20,20))

@@ -1,2 +1,15 @@
+#python stuff
 __pycache__
 .ipynb_checkpoints
+#Latex stuff
+*.aux
+*.gz
+*.idx
+*.log
+*.out
+*.toc
+
+*.bbl
+*.bcf
+*.blg
+*.run.xml

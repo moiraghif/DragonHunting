@@ -6,6 +6,7 @@ import random
 import os
 from time import sleep
 
+
 WORLD_DIM = 15
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
@@ -164,14 +165,15 @@ class DeepQLearningAgentImage(Agent):
             X_train.reshape(-1,X_train.shape[0],X_train.shape[1],1)
             model.fit(X_train,q_vals)
         '''
-        if os.path.isfile('deep_model.model'):
+        if os.path.isfile('deep_model_'+str(WORLD_DIM)+'.model'):
             print('*******************************************')
             print('*******************************************')
             print('*Found an existent model, loading that one*')
             print('*******************************************')
             print('*******************************************')
             #sleep(5)
-            model = load_model('deep_model.model')
+            model = load_model('deep_model_'+str(WORLD_DIM)+'.model')
+
             print(model.summary())
             return model
 
@@ -183,18 +185,21 @@ class DeepQLearningAgentImage(Agent):
         #sleep(5)
         model = Sequential()
         #input shape is (DIM,DIM,1) 1 beacause they are Black&White
-        #model.add(Conv2D(16,(3,3), input_shape=input_shape, activation='relu'))
+
+        #for big world
+        #model.add(Conv2D(8,(3,3), input_shape=input_shape, activation='relu'))
         #model.add(MaxPooling2D((2,2)))
         #model.add(Dropout(0.2))
-        #model.add(Conv2D(16,(3,3), activation='relu'))
-        #model.add(MaxPooling2D((2,2)))
-        #model.add(Dropout(0.1)) # per evitare overfitting
+        #model.add(Flatten())
+        #model.add(Dense(512,activation='relu'))
+        #model.add(Dense(64,activation='relu'))
+
+        #for small world
         model.add(Flatten(input_shape=input_shape))
-        #model.add(Dense(16,activation='relu'))
-        #second attempt
         model.add(Dense(64,activation='relu'))
         #model.add(Dense(32,activation='relu'))
         model.add(Dense(16,activation='relu'))
+
 
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
