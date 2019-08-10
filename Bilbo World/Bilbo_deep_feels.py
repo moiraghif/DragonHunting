@@ -41,19 +41,24 @@ for ep in range(TOT_EPISODES):
         epoch += 1
         epsilon_fear = bilbo.fear(epsilon) if epsilon > epsilon_min else bilbo.fear(epsilon_min)
         action = bilbo.get_action(epsilon_fear,possible_moves)
+
         bilbo.move(inverse_possible_moves[action])()
+        reward = bilbo.reward()
 
         new_state = bilbo.get_state()
         game_ended = bilbo.game_ended()
-        reward = bilbo.reward()
+        #reward = bilbo.reward()
+
 
         if reward==TREASURE_REWARD:
             won+=1
         if reward==-DRAGON_PENALTY:
             lost+=1
+            
         bilbo.add_knowledge((current_state,action,reward,new_state,game_ended))
         current_state = new_state #Lol avevo dimenticato questo e non capivo perché preferisse sbattare contro i muri
         bilbo.train(gamma)
+
 
     ep += 1
     if ep % 1 == 0:
@@ -66,6 +71,7 @@ for ep in range(TOT_EPISODES):
     epsilon *= decay_epsilon
     #each 10 episode save the model
     if ep % 10 == 0:
+
         save_model(bilbo.q_nn,'deep_model_'+str(WORLD_DIM)+'.model')
 
 #save the model again in case the MAX_episodes was not divisible by 10

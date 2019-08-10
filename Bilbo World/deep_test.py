@@ -10,7 +10,8 @@ d = {TREASURE_CHAR: '16',
      DRAGON_CHAR: '10',
      OBSTACLE_CHAR: '20'}
 
-TOT_EPISODES = 1
+
+TOT_EPISODES = 1000
 MAX_EPOCH = 400
 
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
@@ -24,7 +25,8 @@ nothingness=0
 for ep in range(TOT_EPISODES):
     #fig = plt.figure(figsize=(20,20))
     anim =[]
-    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True,entrance=(0,0))
+
+    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
     #do deep Q-stuff
     game_ended=False
     epoch = 0
