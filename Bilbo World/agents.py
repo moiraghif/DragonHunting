@@ -6,7 +6,7 @@ import random
 import os
 from time import sleep
 
-WORLD_DIM = 15
+WORLD_DIM = 25
 DRAGON_CHAR = '☠'
 TREASURE_CHAR = '♚'
 PLAYER_CHAR = '☺'
@@ -164,14 +164,14 @@ class DeepQLearningAgentImage(Agent):
             X_train.reshape(-1,X_train.shape[0],X_train.shape[1],1)
             model.fit(X_train,q_vals)
         '''
-        if os.path.isfile('deep_model.model'):
+        if os.path.isfile('deep_model_'+str(WORLD_DIM)+'.model'):
             print('*******************************************')
             print('*******************************************')
             print('*Found an existent model, loading that one*')
             print('*******************************************')
             print('*******************************************')
             #sleep(5)
-            model = load_model('deep_model.model')
+            model = load_model('deep_model_'+str(WORLD_DIM)+'.model')
             print(model.summary())
             return model
 
@@ -183,18 +183,19 @@ class DeepQLearningAgentImage(Agent):
         #sleep(5)
         model = Sequential()
         #input shape is (DIM,DIM,1) 1 beacause they are Black&White
-        #model.add(Conv2D(16,(3,3), input_shape=input_shape, activation='relu'))
-        #model.add(MaxPooling2D((2,2)))
-        #model.add(Dropout(0.2))
-        #model.add(Conv2D(16,(3,3), activation='relu'))
-        #model.add(MaxPooling2D((2,2)))
-        #model.add(Dropout(0.1)) # per evitare overfitting
-        model.add(Flatten(input_shape=input_shape))
-        #model.add(Dense(16,activation='relu'))
-        #second attempt
+        #for big world
+        model.add(Conv2D(8,(3,3), input_shape=input_shape, activation='relu'))
+        model.add(MaxPooling2D((2,2)))
+        model.add(Dropout(0.2))
+        model.add(Flatten())
+        model.add(Dense(512,activation='relu'))
         model.add(Dense(64,activation='relu'))
+
+        #for small world
+        #model.add(Flatten(input_shape=input_shape))
+        #model.add(Dense(64,activation='relu'))
         #model.add(Dense(32,activation='relu'))
-        model.add(Dense(16,activation='relu'))
+        #model.add(Dense(16,activation='relu'))
 
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
@@ -213,7 +214,7 @@ class DeepQLearningAgentImage(Agent):
 
 
 
-    def train(self,gamma,MAX_EPOCH):
+    def train(self,gamma):
 
         # Start training only if certain number of samples is already saved
         if len(self.memory) < MIN_MEMORY:
@@ -234,7 +235,7 @@ class DeepQLearningAgentImage(Agent):
         y = []
 
         # Now we need to enumerate our batches
-        for index, (current_state, action, reward, next_current_state, game_ended,epoch) in enumerate(minibatch):
+        for index, (current_state, action, reward, next_current_state, game_ended) in enumerate(minibatch):
             # almost like with Q Learning, but we use just part of equation here
             if game_ended:
                 new_q = reward
