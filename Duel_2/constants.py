@@ -1,7 +1,7 @@
 from numpy import array as nparray
 
 
-EPSILON = 0.05
+EPSILON = 0.5
 
 WALL_CHAR = "W"
 DRAGON_CHAR = "D"
@@ -16,7 +16,9 @@ ENEMY2_CHAR = "F"
 
 WORLD = nparray([["" for x in range(20)]
                  for y in range(20)])
+WORLD[0:2, 2] = WALL_CHAR
 WORLD[0:3, 7] = WALL_CHAR
+WORLD[2, 0:3] = WALL_CHAR
 WORLD[2:5, 11] = WALL_CHAR
 WORLD[3:6, 15] = WALL_CHAR
 WORLD[5:13, 7] = WALL_CHAR
@@ -43,4 +45,3 @@ WORLD[12, [3, 16]] = WALL_CHAR
 WORLD[15, [8, 10]] = WALL_CHAR
 WORLD[16, [2, 15]] = WALL_CHAR
 WORLD[17, [8, 10]] = WALL_CHAR
-WORLD[18, 18] = WALL_CHAR

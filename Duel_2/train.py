@@ -4,9 +4,10 @@ import constants
 import numpy as np
 
 
-MAX_EPOCHS = 200
-EPISODES = 100000
-EPISILON_DECAY = 0.99992
+MAX_EPOCHS = 400
+EPISODES = 10000
+EPISILON_DECAY = 0.995
+MIN_EPSILON = 0.01
 
 epsilon = constants.EPSILON
 
@@ -20,8 +21,7 @@ def reset():
     world1.save_qtable()
 
 
-# reset()
-
+#reset()
 
 def print_max_length(txt):
     max_l = len(str(txt))
@@ -43,7 +43,6 @@ for episode in range(0, EPISODES):
                agents.Agent(constants.DRAGON_CHAR)]
     players_alive = {p: True for p in players}
     world1 = world.World(players, False)
-    print("Episode {}".format(fix_episode(episode)), end="\r")
     for epoch in range(MAX_EPOCHS):
         b_done = False
         last_move = (epoch + 1) == MAX_EPOCHS
@@ -51,6 +50,7 @@ for episode in range(0, EPISODES):
             if not players_alive[p]:
                 continue
             reward, done = p.get_action(last_move,epsilon)
+
             if done:
                 players_alive[p] = False
                 b_done = np.sum(np.array([
@@ -59,4 +59,13 @@ for episode in range(0, EPISODES):
                     break
         if b_done:
             break
+    epsilon = epsilon*EPISILON_DECAY if epsilon > MIN_EPSILON else MIN_EPSILON
+    print(world1)
+    print("Episode {} , epsilon {}".format(fix_episode(episode),round(epsilon,4)))
+    what_to_print = ""
+    for p in players:
+        health = '0'+str(p.healt) if p.healt < 10 else str(p.healt)
+        what_to_print = what_to_print + p.char + ":" + health + "\t"
+    print(what_to_print)
+
     world1.save_qtable()

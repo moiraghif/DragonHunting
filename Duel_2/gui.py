@@ -1,9 +1,9 @@
-import constants
 import threading
 import time
 import tkinter as tk
 import numpy as np
 from PIL import Image, ImageTk
+import constants
 
 
 class GUI:
@@ -78,11 +78,13 @@ class GUI:
             for p in alive.keys():
                 if p.healt == 0:
                     alive[p] = False
-                    pos = (self.world.players[p] * self.size)[::-1]
-                    self.draw.delete(self.players[p.char])
-                    self.draw.create_image((*pos),
-                                           anchor=tk.NW,
-                                           image=self.rip)
+                    reward, done = p.get_action()
+                    if reward == -10:
+                        pos = (self.world.players[p] * self.size)[::-1]
+                        self.draw.delete(self.players[p.char])
+                        self.draw.create_image((*pos),
+                                               anchor=tk.NW,
+                                               image=self.rip)
                     continue
                 pos = self.world.players[p]
                 healts0 = {p: p.healt for p in self.world.players.keys()}
@@ -101,6 +103,12 @@ class GUI:
                 else:
                     self.move_agent(p, delta_pos)
                     time.sleep(TIME)
+            what_to_print = ""
+            for p in self.world.players.keys():
+                health = '0'+str(p.healt) if p.healt < 10 else str(p.healt)
+                what_to_print = what_to_print + p.char + ":" + health + "\t"
+            print(what_to_print, end='\r')
             if np.sum(np.array([v for k, v in alive.items()])) == 1:
                 return
+        print(what_to_print)
         return

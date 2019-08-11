@@ -1,6 +1,9 @@
 import constants
 import networkx as nx
 import numpy as np
+import re
+
+OBSTACLE_CHAR = "█"
 
 
 class World:
@@ -13,6 +16,9 @@ class World:
         for p in players:
             self.casual_spawn(p)
             p.initialize_world(self, new_qtable)
+        #Here we will put the tombs of the dead
+        #it's an isolated place so there should be no trouble
+        self.graveyard = [(0,0),(0,1),(1,0),(1,1)]
 
     def create_graph(self):
         for y in range(self.dim_y):
@@ -42,6 +48,9 @@ class World:
         if any(np.array(pos) >= [self.dim_y, self.dim_x]) or \
            any(np.array(pos) < 0):
             return False
+        #if in grave
+        if pos[0] < 3 and pos[1] < 3:
+            return False
         return len(self.world[pos]) == 0
 
     def move_of(self, agent, x=0, y=0):
@@ -54,13 +63,13 @@ class World:
             self.world[tuple(pos0)] = ""
             self.players[agent] = np.array([*pos])
             delta = enemy_dist - self.get_dist_closer_enemy(agent)
-            return 1 if delta > 0 else -2
+            return 0 if delta > 0 else -2
         return -5
 
     def attack(self, agent):
         reward = 0
         for enemy in self.players.keys():
-            if agent.char == enemy.char and not enemy.alive():
+            if agent.char == enemy.char or not enemy.alive():
                 continue
             try:
                 dist = len(nx.shortest_path(self.graph,
@@ -72,7 +81,7 @@ class World:
                 return -2
             if dist == 2:
                 enemy.healt -= 1
-                reward += (3 if enemy.alive() else 10)
+                reward += (10 if enemy.alive() else 20)
         return reward if reward > 0 else -2
 
     def get_dist_to_enemy(self, agent, enemy):
@@ -130,12 +139,41 @@ class World:
         if agent.healt > 0:
             return fn(), False
         if self.pos_to_node(self.players[agent]) in self.graph.nodes:
-            pos = self.pos_to_node(self.players[agent])
-            self.graph.remove_edges_from([n for n in self.graph.edges
-                                          if pos in n])
-            self.graph.remove_node(pos)
-        return -10, True
+            #pos = self.pos_to_node(self.players[agent])
+            #self.graph.remove_edges_from([n for n in self.graph.edges
+            #                              if pos in n])
+            #self.graph.remove_node(pos)
+            self.put_p_in_grave(agent)
+            return -10, True
+        return 0, True
+
+    def get_pos(self,player):
+        char = player.char
+        for y in range(self.dim_y):
+            for x in range(self.dim_x):
+                if char == self.world[y, x]:#agent.char:
+                    return (y, x)
+        return False
+
+    def put_p_in_grave(self,player):
+        for pos in self.graveyard:
+            if self.world[pos] == '':
+                grave = pos
+                break
+        actual_pos = self.get_pos(player)
+        self.world[grave] = player.char
+        self.world[actual_pos] = ''
+        self.players[player]=np.array(grave)
 
     def save_qtable(self):
         for p in self.players.keys():
             p.save_qtable()
+
+    def __str__(self):
+        "Convert the world into string"
+        txt = "┌" + "─" * (2*self.dim_x) + "┐\n│"
+        txt += '|\n|'.join([''.join(['{:2}'.format(item) for item in row])
+                        for row in self.world])
+        txt += "│\n" + "└" + "─" * (2*self.dim_x) + "┘"
+        txt = re.sub('W\s',2*OBSTACLE_CHAR,txt)
+        return txt
