@@ -2,10 +2,13 @@ import agents
 import world
 import constants
 import numpy as np
+import curses
+from progressbar import ProgressBar
 
+stdscr = curses.initscr()
 
 MAX_EPOCHS = 400
-EPISODES = 10000
+EPISODES = 10
 EPISILON_DECAY = 0.995
 MIN_EPSILON = 0.01
 
@@ -60,12 +63,20 @@ for episode in range(0, EPISODES):
         if b_done:
             break
     epsilon = epsilon*EPISILON_DECAY if epsilon > MIN_EPSILON else MIN_EPSILON
-    print(world1)
-    print("Episode {} , epsilon {}".format(fix_episode(episode),round(epsilon,4)))
+    #print(world1)
+    stdscr.addstr(0, 0,"Episode:{0} [{3:10}] {2}%, epsilon: {1}".format(fix_episode(episode),
+                        round(epsilon,4),round(episode*100/EPISODES),
+                        '#'*round(episode*10/EPISODES)))
     what_to_print = ""
     for p in players:
         health = '0'+str(p.healt) if p.healt < 10 else str(p.healt)
         what_to_print = what_to_print + p.char + ":" + health + "\t"
-    print(what_to_print)
+    stdscr.addstr(1, 0,what_to_print)
+
+    stdscr.refresh()
 
     world1.save_qtable()
+#curses.echo()
+#curses.nocbreak()
+curses.endwin()
+print('Training completed!')
