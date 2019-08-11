@@ -1,6 +1,6 @@
 import numpy as np
 import re
-from agents import *
+from agents import Agent, QLearningAgent, DeepQLearningAgentImage, WORLD_DIM
 from PIL import Image
 
 DRAGON_CHAR = '☠'

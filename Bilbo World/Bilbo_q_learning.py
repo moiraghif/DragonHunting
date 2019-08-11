@@ -1,9 +1,10 @@
-from CreateBilboWorld import *
 import numpy as np
-from agents import *
 import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from agents import QLearningAgent, WORLD_DIM
+from CreateBilboWorld import *
+
 
 d = {TREASURE_CHAR: '16',
      PLAYER_CHAR: '5',
@@ -17,7 +18,7 @@ epsilon = 0.2
 decay_epsilon = 0.99
 
 #In case of 15x15
-TOT_EPISODES=9
+TOT_EPISODES=1000
 MAX_EPOCH=1000
 
 # In case of 20x20
@@ -96,12 +97,14 @@ for ep in range(TOT_EPISODES):
       #import ipdb; ipdb.set_trace()
 
     epsilon *= decay_epsilon
-    print("episode:{0:5}, epoch used:{1:4} [{2:10}]{3:3}%".format(ep,epoch,'#'*(round(ep*10/TOT_EPISODES)+1),round(ep*100/TOT_EPISODES)),end='\r')
+    print("episode:{0:5}, epoch used:{1:4} [{2:10}]{3:3}%".format(ep,epoch,'#'*(round(ep*10/TOT_EPISODES)+1),round((ep+1)*100/TOT_EPISODES)),end='\r')
 
-#ipdb.set_trace()
+print('')
+np.save(file_name,q_table)
 
-#testing_phase
-print('Training Completed!')
+
+#Should be testing phase create a new file which is better!!
+
 #bilbo=QLearningAgent(PLAYER_CHAR)
 #mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
 #print(World)
@@ -126,8 +129,6 @@ print('Training Completed!')
 
 #  env = mondo.create_env(d)
 #  anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
-
-#np.save(file_name,q_table)
 
 #title = "Epoch: " + str(epoch) + ", Total Reward: " + str(rewards) + ", taining episodes: " + str(TOT_EPISODES)
 #print(title)
