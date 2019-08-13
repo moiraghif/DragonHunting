@@ -171,6 +171,11 @@ class World:
 
     def get_current_state(self,agent):
         others = [p for p in self.players.keys() if p.char != agent.char]
+
+        if not agent.alive():
+            state = [0,0,0,0]
+            return tuple(state)
+
         state = []
         for p in others:
             if not p.alive():
@@ -199,8 +204,6 @@ class World:
             state.append(d)
             state.append(dist)
 
-        state.append(agent.get_pos()[0])
-        state.append(agent.get_pos()[1])
         return tuple(state)
 
     def save_qtable(self):

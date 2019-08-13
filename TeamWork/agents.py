@@ -36,10 +36,8 @@ class Agent:
         "set the world and the initial qtable (with random values)"
         self.world = world
         self.actions = list(self.generate_actions())
-        self.qtable = np.array([[[[[[[np.random.rand()
-                                      for _ in range(len(self.actions))]
-                                     for self_y in range(20)]
-                                    for self_x in range(20)]
+        self.qtable = np.array([[[[[np.random.rand()
+                                    for _ in range(len(self.actions))]
                                    for player_1_dist in range(2)]
                                   for player_1_direction in range(4)]
                                  for player_2_dist in range(2)]
@@ -69,7 +67,13 @@ class Agent:
     def get_action(self, last_move=False, epsilon=0):
         "The main stuff of q-learning"
         if not self.alive():
+            current_state = self.get_current_state()
             reward, done = self.world.do_action(self, fn=None)
+            self.qtable[current_state] -= self.gamma*reward
+            if self.type == 'p':
+                for p in self.world.players.keys():
+                    if p.type == 'p' and p.char!=self.char:
+                        p.qtable[p.get_current_state()] -= p.gamma*reward
             return reward, done
         current_state = self.get_current_state()
         fn = self.random_action() \
@@ -83,7 +87,7 @@ class Agent:
         new = np.max(self.qtable[new_state])
         q_value = self.alpha * (reward + self.gamma * new - old_q)
         if epsilon!=0: #don't save in the test phase
-            self.qtable[new_state][fn] += q_value
+            self.qtable[current_state][fn] += q_value
         return reward, done
 
     def save_qtable(self):
