@@ -3,7 +3,6 @@ import world
 import constants
 import numpy as np
 import curses
-from progressbar import ProgressBar
 
 stdscr = curses.initscr()
 
