@@ -1,7 +1,7 @@
 import numpy as np
 import re
-from agents import Agent, QLearningAgent, DeepQLearningAgentImage, WORLD_DIM
 from PIL import Image
+from agents import Agent, QLearningAgent, DeepQLearningAgentImage, WORLD_DIM
 
 DRAGON_CHAR = '☠'
 DRAGON_PENALTY = 500
@@ -16,7 +16,7 @@ WALKING_PENALTY = 1
 TOO_MUCH_WALK_PENALTY = 49
 
 class World:
-    def __init__(self, dim_x=WORLD_DIM, dim_y=None,bilbo=None,entrance=False,obstacle=False):
+    def __init__(self, dim_x=WORLD_DIM, dim_y=None, bilbo=None, entrance=False, obstacle=False):
         "Create a new World"
         self.dim_x = dim_x
         if dim_y:
@@ -29,21 +29,25 @@ class World:
                                for y in range(self.dim_y)])
         #making the obstacles options
         if obstacle:
-        	np.random.seed(seed=1234)
-        	self.insert_obstacles()
+            np.random.seed(seed=1234)
+            self.insert_obstacles()
         #the position can be changed later
-        self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
-        self.world[round(self.dim_y/2)-1, dim_x-1] = TREASURE_CHAR
-        bilbo_entrance = self.create_entrance(entrance)
+        #self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
+        #self.world[round(self.dim_y/2)-1, dim_x-1] = TREASURE_CHAR
+        bilbo_entrance = self.random_spawn(entrance)
         self.world[bilbo_entrance] = PLAYER_CHAR
+        treasure_spawn = self.random_spawn()
+        self.world[treasure_spawn] = TREASURE_CHAR
+        dragon_spawn = self.random_spawn()
+        self.world[dragon_spawn] = DRAGON_CHAR
 
         #this should be in agent class
         self.possible_moves = {1:'up',2:'down',3:'right',4:'left'}
 
-    def create_entrance(self,entrance=False):
+    def random_spawn(self, entrance=False):
         '''
-        check if user specified an entrance for biblo else will
-        create a new one where there are no obstacles or characters
+        check if user specified an entrance/spawn point otherwise it will
+        find a new point where there are no obstacles or other characters
         '''
         if not entrance:
             np.random.seed(None)
@@ -51,10 +55,9 @@ class World:
             y = np.random.randint(WORLD_DIM)
             if self.world[x,y] == '':
                 return (x,y)
-            else:
-                return self.create_entrance()
-        else:
-            return entrance
+            return self.random_spawn()
+        return entrance
+
     def insert_obstacles(self):
         "Insert obstacles in the new world"
         for i in range(self.dim_x):
@@ -63,32 +66,31 @@ class World:
                 if ((np.random.rand() > 1 - OBSTACLE_CONST) and (self.world[i, j]=='')):
                     self.world[i, j] = OBSTACLE_CHAR
 
-    #def get_player
     def treasure_gone(self):
-    	if self.get_position(TREASURE_CHAR):
-    		return 1
-    	else:
-    		return 0
+        "Checks if the treasure is on the map"
+        if self.get_position(TREASURE_CHAR):
+            return 1
+        return 0
 
     def game_state(self):
         "Is the game finished? In that case, return the True"
         #will be the
         #if the coin is eaten and he is at the exit again
-        if ((not self.get_position(TREASURE_CHAR))): #and (self.get_position(self.player.char)==self.exit)):#(get_position(self.player.char)==entrance)):
-        	return 1 #means he won
+        if not self.get_position(TREASURE_CHAR):
+            return 1 #means he won
         #BILBO was eaten
-        elif (not self.get_position(PLAYER_CHAR)):
-        	return 2 #he failed
+        if not self.get_position(PLAYER_CHAR):
+            return 2 #he failed
         return 0 #continue the game please
 
     def reward(self):
-    	game_state = self.game_state()
-    	if game_state==1:
-    		return TREASURE_REWARD
-    	elif game_state==2:
-    		return -DRAGON_PENALTY
-    	else:
-    		return -WALKING_PENALTY
+        "return the reward based on the game state"
+        game_state = self.game_state()
+        if game_state == 1:
+            return TREASURE_REWARD
+        if game_state == 2:
+            return -DRAGON_PENALTY
+        return -WALKING_PENALTY
 
     def is_border(self, pos):
         """Check if the cell is borderline:
@@ -108,11 +110,9 @@ class World:
         # the finishing position is obstruited
         if not self.world[pos_from] or not self.is_border(pos_to):
             return False
-        # KILL bilbo
-        if self.world[pos_to]==DRAGON_CHAR:
-            #self.player=None
+        # Kill Bilbo
+        if self.world[pos_to] == DRAGON_CHAR:
             self.world[pos_from] = ''
-        	#self.world[pos_to] = DRAGON_CHAR
             return True
         #move him
         self.world[pos_from], self.world[pos_to] = "", self.world[pos_from]
@@ -145,12 +145,7 @@ class World:
     def get_state(self):
         "Return the state for the q-learning"
         player_pos = self.get_position(self.player.char)
-        return(player_pos)
-
-
-    def explore(self, agent):
-        "Return what an agent sees"
-        return self.world
+        return player_pos
 
     def __str__(self):
         "Convert the world into string"
@@ -170,16 +165,16 @@ class World:
         '''
         env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
         if self.get_position(TREASURE_CHAR):
-          env[self.get_position(TREASURE_CHAR)[0],self.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
+            env[self.get_position(TREASURE_CHAR)[0], self.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
         if self.get_position(PLAYER_CHAR):
-          env[self.get_position(PLAYER_CHAR)[0],self.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
-        env[self.get_position(DRAGON_CHAR)[0],self.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
-        obstacles = np.argwhere(self.world==OBSTACLE_CHAR)
+            env[self.get_position(PLAYER_CHAR)[0], self.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
+        env[self.get_position(DRAGON_CHAR)[0], self.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
+        obstacles = np.argwhere(self.world == OBSTACLE_CHAR)
         for coord in obstacles:
-                env[coord[0]][coord[1]]=d[OBSTACLE_CHAR]
+            env[coord[0]][coord[1]] = d[OBSTACLE_CHAR]
         return env
 
-    def get_image(self,d):
+    def get_image(self, d):
         '''
         Creates an image that can be used by the deep q learning network
         if you want to resize just do .resize((dim1,dim2)) to the
@@ -191,38 +186,16 @@ class World:
         img = Image.fromarray(env) #255 max color
         return img
 
-    def deep_normalized_state(self,d,image=False):
+    def deep_normalized_state(self, d, image=False):
+        '''
+        Creates the input ''image'' for the DQN
+        if image is False the image is not normalized
+        '''
         env = self.create_env(d)
         if image:
             return env/np.max(env)
-        else:
-            if not self.get_position(PLAYER_CHAR):
-                return (np.array([self.get_position(DRAGON_CHAR)[0],
-                                self.get_position(DRAGON_CHAR)[1],
-                                self.treasure_gone()]))
-            else:
-                return (np.array([self.get_position(PLAYER_CHAR)[0],
-                            self.get_position(PLAYER_CHAR)[1],
-                            self.treasure_gone()]))
+        return env
 
 
-if __name__=='__main__':
-    print('ok')
-	#mondo=World(WORLD_DIM,WORLD_DIM)
-	#print(mondo)
-
-	#seems working
-	#for i in range(WORLD_DIM):
-	#	#move = mondo.random_move()
-	#	#print(move)
-	#	mondo.action('right')
-	#	print(mondo)
-
-	#mondo.action('down')
-	#print(mondo)
-	#mondo.action('down')
-	#print(mondo)
-	#mondo.action('down')
-	#print(mondo)
-	#mondo.action('left')
-	#print(mondo)
+if __name__ == '__main__':
+    print('This file has the World class in it!')

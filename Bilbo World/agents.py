@@ -1,10 +1,9 @@
-import numpy as np
-from tensorflow.keras.models import Sequential, save_model, load_model
-from tensorflow.keras.layers import Dense, Activation, Dropout, Conv2D,MaxPooling2D, Flatten
+import os
 from collections import deque
 import random
-import os
-from time import sleep
+from tensorflow.keras.models import Sequential, save_model, load_model
+from tensorflow.keras.layers import Dense, Dropout, Conv2D, MaxPooling2D, Flatten
+import numpy as np
 
 
 WORLD_DIM = 15
@@ -13,12 +12,13 @@ TREASURE_CHAR = '♚'
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 
-MAX_MEMORY = 100000
+MAX_MEMORY = 5000
 MIN_MEMORY = 150
 
 
 
 class Agent:
+    "Just an Agent(or as we call it Bilbo) which moves on the GridWorld"
     def __init__(self, char):
         "Create a new agent"
         self.char = char
@@ -32,10 +32,12 @@ class Agent:
         self.function_memory = [] #no more needed will remove later
 
     def initialize_world(self, world):
+        "Initialize the world for Bilbo"
         self.world = world
 
     def get_pos(self):
-        return(self.world.get_position(self.char))
+        "return the position (y,x) of the agent on the gridWorld"
+        return self.world.get_position(self.char)
 
     def move(self, d):
         "Generate the function to mode the agent"
@@ -55,9 +57,10 @@ class Agent:
         return lambda: self.world.move_of(self, y=y, x=x)
 
     def random_action(self):
+        "return any of the possible actions"
         #mi serve il nome dell'azione
         movements = ["up", "down", "left", "right"]
-        return(movements[np.random.randint(len(self.actions))])
+        return movements[np.random.randint(len(self.actions))]
 
     def fear(self,epsilon):
         '''
@@ -81,42 +84,48 @@ class Agent:
         except NameError:
             return False
 
-    def remember_move(self,move):
-        self.function_memory.append(move)
-
-    def return_memory(self):
-        return self.function_memory
-
 
 class QLearningAgent(Agent):
-    def learning_function(self,alpha,gamma,x_old,reward,x_new):
-        return (x_old + alpha*(reward + gamma*x_new - x_old))
+    "Agent generalization for q learning"
+    def learning_function(self, alpha, gamma, x_old, reward, x_new):
+        "the q-function"
+        return x_old + alpha*(reward + gamma*x_new - x_old)
 
     def get_current_state(self):
         """
         Get the current state from the current world
         it is used as a index for the q-table
         """
-        return(self.world.get_state())
+        return self.world.get_state()
 
     def treasure_gone(self):
-        return (self.world.treasure_gone())
+        "check is the treasure is in the map"
+        return self.world.treasure_gone()
 
-    def get_action(self,epsilon,q_table,possible_moves):
-        if np.random.uniform(0,1) < epsilon:
+    def get_action(self, epsilon, q_table, possible_moves):
+        "gets the action using epsilon-greedy policy"
+        if np.random.uniform(0, 1) < epsilon:
             action = possible_moves[self.random_action()]
         else:
             action = np.argmax(q_table[self.get_current_state()])
-        return(action)
+        return action
+
     def game_ended(self):
-        return(not self.world.game_state() == 0)
+        "checks if the game has ended"
+        return not self.world.game_state() == 0
 
     def reward(self):
+        "return the reward for the action taken by the agent"
         return self.world.reward()
 
 class DeepQLearningAgentImage(Agent):
-
+    '''
+    The DeepQLearningAgent whose input is the matrix of the world
+    and this matrix represent the image of the world in Black and White
+    the image has the pixel as the dimension of the world
+    '''
     def __init__(self,char):
+        "initialized the main class"
         super().__init__(char)
         self.q_nn = self.initialize_nn(input_shape=(WORLD_DIM,WORLD_DIM,1))
         self.map = {TREASURE_CHAR: '16',
@@ -125,31 +134,38 @@ class DeepQLearningAgentImage(Agent):
                     OBSTACLE_CHAR: '20'}
         self.memory = deque(maxlen=MAX_MEMORY)
 
-    def learning_function(self,alpha,gamma,x_old,reward,x_new):
-        return ((1-alpha) * x_old + alpha*(reward + gamma*x_new))
+    def learning_function(self, alpha, gamma, x_old, reward, x_new):
+        "the Q-learning function"
+        return (1-alpha) * x_old + alpha*(reward + gamma*x_new)
 
     def get_state(self):
-        return self.world.deep_normalized_state(self.map,image=True).reshape(WORLD_DIM,WORLD_DIM,1)
+        "reshapes the state for the NN"
+        return self.world.deep_normalized_state(self.map, image=True).reshape(WORLD_DIM, WORLD_DIM, 1)
 
     def treasure_gone(self):
-        return (self.world.treasure_gone())
+        "checks if the treasure still exists"
+        return self.world.treasure_gone()
 
-    def get_qs(self,state):
-        return self.q_nn.predict(state.reshape(-1,WORLD_DIM,WORLD_DIM,1))
+    def get_qs(self, state):
+        "return the predicted q-values from the NN"
+        return self.q_nn.predict(state.reshape(-1, WORLD_DIM, WORLD_DIM, 1))
 
-    def get_action(self,epsilon,possible_moves):
-        if np.random.uniform(0,1) < epsilon:
-            action = possible_moves[self.random_action()]
-        else:
-            action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1,WORLD_DIM,WORLD_DIM,1))[0])
-        return(action)
+    def get_action(self, epsilon, possible_moves):
+        "return the action based on the epsilon-greedy policy"
+        if np.random.uniform(0, 1) < epsilon:
+            return possible_moves[self.random_action()]
+        action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1, WORLD_DIM, WORLD_DIM, 1))[0])
+        return action
 
     def game_ended(self):
-        return(not self.world.game_state() == 0)
+        "simply checks if the game has ended or not"
+        return not self.world.game_state() == 0
 
     def reward(self):
+        "returns the reward that bilbo gets for the action"
         return self.world.reward()
-    def initialize_nn(self,input_shape):
+
+    def initialize_nn(self, input_shape):
         '''
         for the prediction do:
             env = world.create_env(d)
@@ -186,7 +202,7 @@ class DeepQLearningAgentImage(Agent):
         model = Sequential()
         #input shape is (DIM,DIM,1) 1 beacause they are Black&White
 
-        #for big world
+        #for big world might need the convolution
         #model.add(Conv2D(8,(3,3), input_shape=input_shape, activation='relu'))
         #model.add(MaxPooling2D((2,2)))
         #model.add(Dropout(0.2))
@@ -196,9 +212,8 @@ class DeepQLearningAgentImage(Agent):
 
         #for small world
         model.add(Flatten(input_shape=input_shape))
-        model.add(Dense(64,activation='relu'))
-        #model.add(Dense(32,activation='relu'))
-        model.add(Dense(16,activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(16, activation='relu'))
 
 
         model.add(Dense(self.action_size, activation='linear'))
@@ -208,30 +223,21 @@ class DeepQLearningAgentImage(Agent):
         return model
 
     def add_knowledge(self, knowledge):
+        "appends the game state in the memory thus adding knowledge for DQN"
         self.memory.append(knowledge)
 
-    #####################################
-    ################################
-    ##########BANANA STUFF
-    ##############################
-    #######################################
-
-
-
-    def train(self,gamma,MAX_EPOCH):
-
-        # Start training only if certain number of samples is already saved
+    def train(self, gamma):
+        "Trains the NN with minibatch technique"
+        # Inizio training solo dopo almeno MIN_MEMORY elementi
         if len(self.memory) < MIN_MEMORY:
             return
 
-        # Get a minibatch of random samples from memory replay table
+        # random elements from memory
         minibatch = random.sample(self.memory, 32)
-        # Get current states from minibatch, then query NN model for Q values
+
         current_states = np.array([memory[0] for memory in minibatch])
         current_qs_list = self.q_nn.predict(current_states)
 
-        # Get future states from minibatch, then query NN model for Q values
-        # When using target network, query it, otherwise main network should be queried
         next_current_states = np.array([transition[3] for transition in minibatch])
         future_qs_list = self.q_nn.predict(next_current_states)
 
@@ -239,172 +245,22 @@ class DeepQLearningAgentImage(Agent):
         y = []
 
         # Now we need to enumerate our batches
-        for index, (current_state, action, reward, next_current_state, game_ended,epoch) in enumerate(minibatch):
+        for index, (current_state, action, reward, next_current_state, game_ended) in enumerate(minibatch):
             # almost like with Q Learning, but we use just part of equation here
             if game_ended:
                 new_q = reward
             elif (next_current_state==current_state).all():
                 #any kind of obtacle which made bilbo not move
-                new_q = -100 #+ gamma * np.max(future_qs_list[index]) #in case of obstacle or wall
-            #elif epoch==MAX_EPOCH:
-            #    new_q = -2000
+                new_q = -100
             else:
                 max_future_q = np.max(future_qs_list[index])
                 new_q = reward + gamma * max_future_q
 
-            # Update Q value for given state
+            # Aggiorna i q-value
             current_qs = current_qs_list[index]
             current_qs[action] = new_q
 
-            # And append to our training data
             X.append(current_state)
             y.append(current_qs)
 
-        #ipdb.set_trace()
-        # Fit on all samples as one batch, log only on terminal state
-
         self.q_nn.fit(np.array(X), np.array(y), batch_size=32, verbose=0, shuffle=False)
-        #print('model should be saved now and the memory size is: ', len(self.memory))
-        # Update target network counter every episode
-        #if terminal_state:
-        #    self.target_update_counter += 1
-
-        # If counter reaches set value, update target network with weights of main network
-        #if self.target_update_counter > UPDATE_TARGET_EVERY:
-        #    self.target_model.set_weights(self.model.get_weights())
-        #    self.target_update_counter = 0
-
-
-
-
-
-
-class DeepQLearningAgent(Agent):
-
-    def __init__(self,char):
-        super().__init__(char)
-        self.q_nn = self.initialize_nn(input_shape=(3,))
-        #self.predict_nn = self.initialize_nn(input_shape=(WORLD_DIM,WORLD_DIM,1))
-        #self.predict_nn.set_weights(self.q_nn.get_weights())
-        self.map = {TREASURE_CHAR: '16',
-                    PLAYER_CHAR: '5',
-                    DRAGON_CHAR: '10',
-                    OBSTACLE_CHAR: '20'}
-        self.memory = deque(maxlen=MAX_MEMORY)
-
-    def learning_function(self,alpha,gamma,x_old,reward,x_new):
-        return ((1-alpha) * x_old + alpha*(reward + gamma*x_new))
-
-    def get_state(self):
-        return self.world.deep_normalized_state(self.map)
-
-    def treasure_gone(self):
-        return (self.world.treasure_gone())
-
-    def get_qs(self,state):
-        return self.q_nn.predict(state)
-
-    def get_action(self,epsilon,possible_moves):
-        if np.random.uniform(0,1) < epsilon:
-            action = possible_moves[self.random_action()]
-        else:
-            action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1,3)))
-        return(action)
-
-    def game_ended(self):
-        return(not self.world.game_state() == 0)
-
-    def reward(self):
-        return self.world.reward()
-    def initialize_nn(self,input_shape):
-        '''
-        for the prediction do:
-            env = world.create_env(d)
-            state=env.reshape(-1,env.shape[0],env.shape[1],1)
-            model.predict(state)
-        using the -1 python should infer the batch size autmatically
-        the reshape is needed to match the following shape
-        (batch_size, img_height, img_width, number_of_channels)
-        in our case the number_of_channels is 1 beacuse I created a B&W image
-        for the fitting do:
-            X_train = collection of states (the env)
-            q_vals = collection of precedent (q_vals)
-            X_train.reshape(-1,X_train.shape[0],X_train.shape[1],1)
-            model.fit(X_train,q_vals)
-        '''
-        model = Sequential()
-        #input shape is (DIM,DIM,1) 1 beacause they are Black&White
-        model.add(Dense(2, input_shape=input_shape, activation='relu'))
-        model.add(Dense(3,activation='relu'))
-        model.add(Dense(self.action_size, activation='linear'))
-        model.compile(loss='mse',
-                      optimizer='adam')
-        return model
-
-    def add_knowledge(self, knowledge):
-        self.memory.append(knowledge)
-
-    #####################################
-    ################################
-    ##########BANANA STUFF
-    ##############################
-    #######################################
-
-
-
-    def train(self,gamma,MAX_EPOCH):
-
-        # Start training only if certain number of samples is already saved
-        if len(self.memory) < MIN_MEMORY:
-            return
-
-        # Get a minibatch of random samples from memory replay table
-        minibatch = random.sample(self.memory, 32)
-        # Get current states from minibatch, then query NN model for Q values
-        current_states = np.array([memory[0] for memory in minibatch])
-        #ipdb.set_trace()
-        current_qs_list = self.q_nn.predict(current_states)
-
-        # Get future states from minibatch, then query NN model for Q values
-        # When using target network, query it, otherwise main network should be queried
-        next_current_states = np.array([transition[3] for transition in minibatch])
-        future_qs_list = self.q_nn.predict(next_current_states)
-
-        X = []
-        y = []
-
-        # Now we need to enumerate our batches
-        for index, (current_state, action, reward, next_current_state, game_ended,epoch) in enumerate(minibatch):
-            # almost like with Q Learning, but we use just part of equation here
-            if game_ended:
-                new_q = reward
-            elif (next_current_state==current_state).all():
-                #any kind of obtacle which made bilbo not move
-                new_q = -100 #-100 in case of obstacle
-            elif epoch==MAX_EPOCH:
-                new_q = -49
-            else:
-                max_future_q = np.max(future_qs_list[index])
-                new_q = reward + gamma * max_future_q
-
-            # Update Q value for given state
-            current_qs = current_qs_list[index]
-            current_qs[action] = new_q
-
-            # And append to our training data
-            X.append(current_state)
-            y.append(current_qs)
-
-        #ipdb.set_trace()
-        # Fit on all samples as one batch, log only on terminal state
-        self.q_nn.fit(np.array(X), np.array(y), batch_size=32, verbose=0, shuffle=False)
-        #print('model should be saved now and the memory size is: ', len(self.memory))
-        save_model(self.q_nn,'deep_model2.model')
-        # Update target network counter every episode
-        #if terminal_state:
-        #    self.target_update_counter += 1
-
-        # If counter reaches set value, update target network with weights of main network
-        #if self.target_update_counter > UPDATE_TARGET_EVERY:
-        #    self.target_model.set_weights(self.model.get_weights())
-        #    self.target_update_counter = 0

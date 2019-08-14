@@ -1,62 +1,57 @@
-from CreateBilboWorld import *
-import numpy as np
-import ipdb
-from agents import *
-import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from CreateBilboWorld import *
+from agents import *
 
 d = {TREASURE_CHAR: '16',
      PLAYER_CHAR: '5',
      DRAGON_CHAR: '10',
      OBSTACLE_CHAR: '20'}
 
-TOT_EPISODES=50000
-MAX_EPOCH = 800
+TOT_EPISODES = 10000
+MAX_EPOCH = 400
 
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
 inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
 
 
-#alpha = 0.5
 gamma = 0.8
 epsilon = 0.5
 epsilon_min = 0.01
-decay_epsilon = 0.9999
+decay_epsilon = 0.9995
 
-bilbo=DeepQLearningAgentImage(PLAYER_CHAR)
+bilbo = DeepQLearningAgentImage(PLAYER_CHAR)
 won = 0
 lost = 0
 for ep in range(TOT_EPISODES):
     #recreate the environment
-    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
+    mondo = World(WORLD_DIM,bilbo=bilbo,obstacle=True)
     #do deep Q-stuff
     np.random.seed()
-    game_ended=False
+    game_ended = False
     epoch = 0
-    current_state=bilbo.get_state()
+    current_state = bilbo.get_state()
     initial = mondo.get_position(PLAYER_CHAR)
     while not game_ended and epoch < MAX_EPOCH:
         #the near it gets to the dragon the more random the movement
+        #in order to explore more around it
         epoch += 1
         epsilon_fear = bilbo.fear(epsilon) if epsilon > epsilon_min else bilbo.fear(epsilon_min)
-        action = bilbo.get_action(epsilon_fear,possible_moves)
+        action = bilbo.get_action(epsilon_fear, possible_moves)
 
         bilbo.move(inverse_possible_moves[action])()
         reward = bilbo.reward()
 
         new_state = bilbo.get_state()
         game_ended = bilbo.game_ended()
-        #reward = bilbo.reward()
 
+        if reward == TREASURE_REWARD:
+            won += 1
+        if reward == -DRAGON_PENALTY:
+            lost += 1
 
-        if reward==TREASURE_REWARD:
-            won+=1
-        if reward==-DRAGON_PENALTY:
-            lost+=1
-            
-        bilbo.add_knowledge((current_state,action,reward,new_state,game_ended))
-        current_state = new_state #Lol avevo dimenticato questo e non capivo perché preferisse sbattare contro i muri
+        bilbo.add_knowledge((current_state, action, reward, new_state, game_ended))
+        current_state = new_state
         bilbo.train(gamma)
 
 

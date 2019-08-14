@@ -64,7 +64,7 @@ print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, epoch {}".format(win,lost
 #if game_ended:
 im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
                                    blit=True)
-writer = animation.FFMpegWriter(fps=30)
+#writer = animation.FFMpegWriter(fps=30)
 #im_ani.save('animation_video_50x50.mp4',writer=writer)
 
 ax = plt.gca()

@@ -18,25 +18,25 @@ epsilon = 0.2
 decay_epsilon = 0.99
 
 #In case of 15x15
-TOT_EPISODES=10000
-MAX_EPOCH=1000
+TOT_EPISODES = 10000
+MAX_EPOCH = 1000
 
 # In case of 20x20
-#TOT_EPISODES=1_000
-#MAX_EPOCH=3000
+#TOT_EPISODES = 10000
+#MAX_EPOCH = 3000
 
 # In case of 25x25
-#TOT_EPISODES=400
-#MAX_EPOCH=1000
+#TOT_EPISODES = 15000
+#MAX_EPOCH = 1000
 
 # In case of 30x30
-#TOT_EPISODES=600
-#MAX_EPOCH=1000
+#TOT_EPISODES = 20000
+#MAX_EPOCH = 1000
 #epsilon = 0.3
 
 # In case of 50x50
-#TOT_EPISODES=1500
-#MAX_EPOCH=1500
+#TOT_EPISODES = 25000
+#MAX_EPOCH = 1500
 #epsilon = 0.4
 #decay_epsilon = 0.994
 
@@ -46,22 +46,19 @@ inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
 
 file_name = "qtable_" + str(WORLD_DIM)
 
-q_table=np.array([[[0.0 for moves in possible_moves]
-           for x in range(WORLD_DIM)]
-           for y in range(WORLD_DIM)]) \
+q_table = np.array([[[0.0 for moves in possible_moves]
+                     for x in range(WORLD_DIM)]
+                    for y in range(WORLD_DIM)]) \
            if not os.path.isfile(file_name + ".npy") \
            else np.load(file_name + ".npy")
 
-fig = plt.figure(figsize=(20,20))
+fig = plt.figure(figsize=(20, 20))
 for ep in range(TOT_EPISODES):
   #recreate the environment
-    bilbo=QLearningAgent(PLAYER_CHAR)
-    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
+    bilbo = QLearningAgent(PLAYER_CHAR)
+    mondo = World(WORLD_DIM, bilbo=bilbo, obstacle=True)
     np.random.seed()
-    #print(World)
-    #do Q-stuff
-    #print(bilbo.get_pos())
-    game_ended=False
+    game_ended = False
     epoch = 0
     anim = []
     titles = []
@@ -69,7 +66,7 @@ for ep in range(TOT_EPISODES):
       #the near it gets to the dragon the more random the movement
         epoch += 1
         epsilon_fear = bilbo.fear(epsilon)
-        action = bilbo.get_action(epsilon,q_table,possible_moves)
+        action = bilbo.get_action(epsilon, q_table, possible_moves)
         current_state = bilbo.get_current_state()
       #treasure_gone = bilbo.treasure_gone()
 
@@ -86,12 +83,12 @@ for ep in range(TOT_EPISODES):
         elif epoch == MAX_EPOCH:
             reward = -TOO_MUCH_WALK_PENALTY
             new_q_val = -TOO_MUCH_WALK_PENALTY
-        elif new_state==current_state:
+        elif new_state == current_state:
             #any kind of obtacle which made bilbo not move
             new_q_val = -OBSTACLE_PENALTY #-10 in case of obstacle
         else:
             next_q_val = np.max(q_table[new_state])
-            new_q_val = bilbo.learning_function(alpha,gamma,old_q_val,reward,next_q_val)
+            new_q_val = bilbo.learning_function(alpha, gamma, old_q_val, reward, next_q_val)
 
         q_table[current_state][action] = new_q_val
       #import ipdb; ipdb.set_trace()
@@ -100,4 +97,4 @@ for ep in range(TOT_EPISODES):
     print("episode:{0:5}, epoch used:{1:4} [{2:10}]{3:3}%".format(ep,epoch,'#'*(round(ep*10/TOT_EPISODES)+1),round((ep+1)*100/TOT_EPISODES)),end='\r')
 
 print('')
-np.save(file_name,q_table)
+np.save(file_name, q_table)
