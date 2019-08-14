@@ -18,7 +18,7 @@ epsilon = 0.2
 decay_epsilon = 0.99
 
 #In case of 15x15
-TOT_EPISODES=1000
+TOT_EPISODES=10000
 MAX_EPOCH=1000
 
 # In case of 20x20
@@ -101,47 +101,3 @@ for ep in range(TOT_EPISODES):
 
 print('')
 np.save(file_name,q_table)
-
-
-#Should be testing phase create a new file which is better!!
-
-#bilbo=QLearningAgent(PLAYER_CHAR)
-#mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
-#print(World)
-#do Q-stuff
-#print(bilbo.get_pos())
-#game_ended=False
-#epoch = 0
-#anim = []
-#rewards = 0
-
-#The First frame
-#env = mondo.create_env(d)
-#anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
-
-#while not game_ended and epoch < MAX_EPOCH:
-#  epoch += 1
-#  action = bilbo.get_action(0,q_table,possible_moves)
-#  bilbo.move(inverse_possible_moves[action])()
-#  game_ended = bilbo.game_ended()
-#  reward = bilbo.reward()
-#  rewards = rewards + reward
-
-#  env = mondo.create_env(d)
-#  anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
-
-#title = "Epoch: " + str(epoch) + ", Total Reward: " + str(rewards) + ", taining episodes: " + str(TOT_EPISODES)
-#print(title)
-#print("Last state of bilbo: ", mondo.get_state(),mondo.treasure_gone())
-#
-#im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=1000,
-#                                   blit=True)
-#writer = animation.FFMpegWriter(fps=30)
-
-#print("Writing video on your FS")
-#im_ani.save('animation_video_50x50.mp4',writer=writer)
-#ax = plt.gca()
-#ax.invert_yaxis()
-#plt.axis('off')
-#plt.title(title)
-#plt.show()
