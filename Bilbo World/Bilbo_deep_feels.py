@@ -25,7 +25,7 @@ won = 0
 lost = 0
 for ep in range(TOT_EPISODES):
     #recreate the environment
-    mondo = World(WORLD_DIM, bilbo=bilbo, obstacle=False)
+    mondo = World(WORLD_DIM, bilbo=bilbo, obstacle=False,random_spawn=True)
     #do deep Q-stuff
     np.random.seed()
     game_ended = False

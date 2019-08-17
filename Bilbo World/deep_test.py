@@ -26,7 +26,7 @@ fig = plt.figure(figsize=(20,20))
 for ep in range(TOT_EPISODES):
     anim =[]
 
-    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=False)
+    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=False,random_spawn=True)
     #do deep Q-stuff
     game_ended=False
     epoch = 0
@@ -64,7 +64,7 @@ print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}".format(win,lost,nothingne
 #import ipdb; ipdb.set_trace()
 #if game_ended:
 #im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
-                                   blit=True)
+#                                   blit=True)
 #writer = animation.FFMpegWriter(fps=30)
 #im_ani.save('animation_video_50x50.mp4',writer=writer)
 

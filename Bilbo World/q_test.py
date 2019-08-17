@@ -29,7 +29,7 @@ q_table=np.array([[[0.0 for moves in possible_moves]
 fig = plt.figure(figsize=(20,20))
 
 bilbo=QLearningAgent(PLAYER_CHAR)
-mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True,entrance=(0,0))
+mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
 game_ended=False
 epoch = 0
 anim = []

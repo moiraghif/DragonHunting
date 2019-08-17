@@ -97,4 +97,4 @@ for ep in range(TOT_EPISODES):
     print("episode:{0:5}, epoch used:{1:4} [{2:10}]{3:3}%".format(ep,epoch,'#'*(round(ep*10/TOT_EPISODES)+1),round((ep+1)*100/TOT_EPISODES)),end='\r')
 
 print('')
-np.save(file_name, q_table)
+#np.save(file_name, q_table)

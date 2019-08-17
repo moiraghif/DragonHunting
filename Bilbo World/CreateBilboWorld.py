@@ -16,7 +16,7 @@ WALKING_PENALTY = 1
 TOO_MUCH_WALK_PENALTY = 49
 
 class World:
-    def __init__(self, dim_x=WORLD_DIM, dim_y=None, bilbo=None, entrance=False, obstacle=False):
+    def __init__(self, dim_x=WORLD_DIM, dim_y=None, bilbo=None, entrance=False, obstacle=False, random_spawn=False):
         "Create a new World"
         self.dim_x = dim_x
         if dim_y:
@@ -32,14 +32,17 @@ class World:
             np.random.seed(seed=1234)
             self.insert_obstacles()
         #the position can be changed later
-        #self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
-        #self.world[round(self.dim_y/2)-1, dim_x-1] = TREASURE_CHAR
+        if random_spawn:
+            treasure_spawn = self.random_spawn()
+            self.world[treasure_spawn] = TREASURE_CHAR
+            dragon_spawn = self.random_spawn()
+            self.world[dragon_spawn] = DRAGON_CHAR
+        else:
+            self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
+            self.world[round(self.dim_y/2)-1, dim_x-1] = TREASURE_CHAR
         bilbo_entrance = self.random_spawn(entrance)
         self.world[bilbo_entrance] = PLAYER_CHAR
-        treasure_spawn = self.random_spawn()
-        self.world[treasure_spawn] = TREASURE_CHAR
-        dragon_spawn = self.random_spawn()
-        self.world[dragon_spawn] = DRAGON_CHAR
+
 
         #this should be in agent class
         self.possible_moves = {1:'up',2:'down',3:'right',4:'left'}
