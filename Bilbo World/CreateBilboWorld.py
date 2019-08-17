@@ -4,13 +4,13 @@ from PIL import Image
 from agents import Agent, QLearningAgent, DeepQLearningAgentImage, WORLD_DIM
 
 DRAGON_CHAR = '☠'
-DRAGON_PENALTY = 500
+DRAGON_PENALTY = 10
 TREASURE_CHAR = '♚'
-TREASURE_REWARD = 1000
+TREASURE_REWARD = 15
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 OBSTACLE_CONST = 0.12
-OBSTACLE_PENALTY = 100
+OBSTACLE_PENALTY = 5
 
 WALKING_PENALTY = 1
 TOO_MUCH_WALK_PENALTY = 49
@@ -76,21 +76,30 @@ class World:
         "Is the game finished? In that case, return the True"
         #will be the
         #if the coin is eaten and he is at the exit again
-        if not self.get_position(TREASURE_CHAR):
+        if self.get_position(TREASURE_CHAR) == (-1, -1):
             return 1 #means he won
         #BILBO was eaten
-        if not self.get_position(PLAYER_CHAR):
+        if self.get_position(PLAYER_CHAR) == (-1, -1):
             return 2 #he failed
         return 0 #continue the game please
 
-    def reward(self):
+    def reward(self, current_state=None, next_state=None, moving_reward=False):
         "return the reward based on the game state"
         game_state = self.game_state()
         if game_state == 1:
             return TREASURE_REWARD
         if game_state == 2:
             return -DRAGON_PENALTY
-        return -WALKING_PENALTY
+
+        if not moving_reward:
+            return -WALKING_PENALTY
+        treasure_pos = np.array(self.get_position(TREASURE_CHAR))
+        player_old_pos = current_state[0:2]
+        player_new_pos = next_state[0:2]
+        if np.sum(np.abs(player_old_pos - treasure_pos)) <= np.sum(np.abs(player_new_pos - treasure_pos)):
+            return -2
+        return 1 #positive if closing in to the treasure
+
 
     def is_border(self, pos):
         """Check if the cell is borderline:
@@ -124,7 +133,7 @@ class World:
             for x in range(self.dim_x):
                 if char == self.world[y, x]:#agent.char:
                     return (y, x)
-        return False
+        return (-1,-1) #not defined (just to have a consistent state)
 
     def move_of(self, agent, x=0, y=0):
         "Move the Biblo if possible"
@@ -164,9 +173,9 @@ class World:
         for the animation with matplotlib and to create image with self.get_image
         '''
         env = np.zeros((WORLD_DIM, WORLD_DIM), dtype=np.uint8)
-        if self.get_position(TREASURE_CHAR):
+        if self.get_position(TREASURE_CHAR) != (-1,-1):
             env[self.get_position(TREASURE_CHAR)[0], self.get_position(TREASURE_CHAR)[1]] = d[TREASURE_CHAR]  # sets the treasure location tile
-        if self.get_position(PLAYER_CHAR):
+        if self.get_position(PLAYER_CHAR) != (-1,-1):
             env[self.get_position(PLAYER_CHAR)[0], self.get_position(PLAYER_CHAR)[1]] = d[PLAYER_CHAR]
         env[self.get_position(DRAGON_CHAR)[0], self.get_position(DRAGON_CHAR)[1]] = d[DRAGON_CHAR]
         obstacles = np.argwhere(self.world == OBSTACLE_CHAR)
@@ -189,12 +198,17 @@ class World:
     def deep_normalized_state(self, d, image=False):
         '''
         Creates the input ''image'' for the DQN
-        if image is False the image is not normalized
+        if image is False the states are the coordinates of the entities
         '''
         env = self.create_env(d)
         if image:
             return env/np.max(env)
-        return env
+        p_pos = self.get_position(PLAYER_CHAR)
+        t_pos = self.get_position(TREASURE_CHAR)
+        d_pos = self.get_position(DRAGON_CHAR)
+        state = [p_pos[0] - t_pos[0], p_pos[1] - t_pos[1],
+                 p_pos[0] - d_pos[0], p_pos[1] - d_pos[1]]
+        return np.array(state)
 
 
 if __name__ == '__main__':

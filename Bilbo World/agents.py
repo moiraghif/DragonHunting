@@ -13,7 +13,7 @@ PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 
 MAX_MEMORY = 5000
-MIN_MEMORY = 150
+MIN_MEMORY = 32
 
 
 
@@ -127,12 +127,13 @@ class DeepQLearningAgentImage(Agent):
     def __init__(self,char):
         "initialized the main class"
         super().__init__(char)
-        self.q_nn = self.initialize_nn(input_shape=(WORLD_DIM,WORLD_DIM,1))
+        self.q_nn = self.initialize_nn(input_shape=(4,))
         self.map = {TREASURE_CHAR: '16',
                     PLAYER_CHAR: '5',
                     DRAGON_CHAR: '10',
                     OBSTACLE_CHAR: '20'}
         self.memory = deque(maxlen=MAX_MEMORY)
+        self.hight_reward_memory = deque(maxlen=MAX_MEMORY)
 
     def learning_function(self, alpha, gamma, x_old, reward, x_new):
         "the Q-learning function"
@@ -140,7 +141,8 @@ class DeepQLearningAgentImage(Agent):
 
     def get_state(self):
         "reshapes the state for the NN"
-        return self.world.deep_normalized_state(self.map, image=True).reshape(WORLD_DIM, WORLD_DIM, 1)
+        #return self.world.deep_normalized_state(self.map, image=True).reshape(WORLD_DIM, WORLD_DIM, 1)
+        return self.world.deep_normalized_state(self.map, image=False)
 
     def treasure_gone(self):
         "checks if the treasure still exists"
@@ -148,22 +150,23 @@ class DeepQLearningAgentImage(Agent):
 
     def get_qs(self, state):
         "return the predicted q-values from the NN"
-        return self.q_nn.predict(state.reshape(-1, WORLD_DIM, WORLD_DIM, 1))
+        #return self.q_nn.predict(state.reshape(-1, WORLD_DIM, WORLD_DIM, 1))[0]
+        return self.q_nn.predict(state.reshape(-1, 4))[0]
 
     def get_action(self, epsilon, possible_moves):
         "return the action based on the epsilon-greedy policy"
         if np.random.uniform(0, 1) < epsilon:
             return possible_moves[self.random_action()]
-        action = np.argmax(self.q_nn.predict(self.get_state().reshape(-1, WORLD_DIM, WORLD_DIM, 1))[0])
+        action = np.argmax(self.get_qs(self.get_state()))
         return action
 
     def game_ended(self):
         "simply checks if the game has ended or not"
         return not self.world.game_state() == 0
 
-    def reward(self):
+    def reward(self, current_state, next_state):
         "returns the reward that bilbo gets for the action"
-        return self.world.reward()
+        return self.world.reward(current_state, next_state, moving_reward=True)
 
     def initialize_nn(self, input_shape):
         '''
@@ -187,7 +190,6 @@ class DeepQLearningAgentImage(Agent):
             print('*Found an existent model, loading that one*')
             print('*******************************************')
             print('*******************************************')
-            #sleep(5)
             model = load_model('deep_model_'+str(WORLD_DIM)+'.model')
 
             print(model.summary())
@@ -198,24 +200,30 @@ class DeepQLearningAgentImage(Agent):
         print('*No existent model, creating a new one*')
         print('***************************************')
         print('***************************************')
-        #sleep(5)
         model = Sequential()
         #input shape is (DIM,DIM,1) 1 beacause they are Black&White
 
         #for big world might need the convolution
-        #model.add(Conv2D(8,(3,3), input_shape=input_shape, activation='relu'))
-        #model.add(MaxPooling2D((2,2)))
-        #model.add(Dropout(0.2))
-        #model.add(Flatten())
-        #model.add(Dense(512,activation='relu'))
-        #model.add(Dense(64,activation='relu'))
+        #if it's too big (>100), one should use more Conv2D and/or MaxPooling2D layers
+        #here is an example inside the if condition
+        if WORLD_DIM > 30:
+            model.add(Conv2D(8, (3, 3), input_shape=input_shape, activation='relu'))
+            model.add(MaxPooling2D((2,2)))
+            model.add(Dropout(0.2))
+            model.add(Flatten())
+            model.add(Dense(512, activation='relu'))
+            #model.add(Dense(64,activation='relu'))
 
         #for small world
-        model.add(Flatten(input_shape=input_shape))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(16, activation='relu'))
+        else:
+            #model.add(Flatten(input_shape=input_shape))
+            #model.add(Dense(64, activation='relu'))
+            #model.add(Dense(512, activation='relu'))
+            model.add(Dense(8, input_shape=input_shape, activation='relu'))
+            model.add(Dense(6, activation='relu'))
 
 
+        #output node
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
                       optimizer='adam')
@@ -226,20 +234,25 @@ class DeepQLearningAgentImage(Agent):
         "appends the game state in the memory thus adding knowledge for DQN"
         self.memory.append(knowledge)
 
+    def add_high_knowledge(self, knowledge):
+        "appends the game state in the memory thus adding knowledge for DQN"
+        self.hight_reward_memory.append(knowledge)
+
     def train(self, gamma):
-        "Trains the NN with minibatch technique"
+        "Trains the NN with minibatch technique with a little twist"
         # Inizio training solo dopo almeno MIN_MEMORY elementi
-        if len(self.memory) < MIN_MEMORY:
+        if len(self.memory) < MIN_MEMORY or len(self.hight_reward_memory) < MIN_MEMORY:
             return
 
         # random elements from memory
-        minibatch = random.sample(self.memory, 32)
+        minibatch = random.sample(self.memory, 16)
+        minibatch.extend(random.sample(self.hight_reward_memory,16))
 
         current_states = np.array([memory[0] for memory in minibatch])
         current_qs_list = self.q_nn.predict(current_states)
 
-        next_current_states = np.array([transition[3] for transition in minibatch])
-        future_qs_list = self.q_nn.predict(next_current_states)
+        next_states = np.array([memory[3] for memory in minibatch])
+        future_qs_list = self.q_nn.predict(next_states)
 
         X = []
         y = []
@@ -249,7 +262,7 @@ class DeepQLearningAgentImage(Agent):
             # almost like with Q Learning, but we use just part of equation here
             if game_ended:
                 new_q = reward
-            elif (next_current_state==current_state).all():
+            elif (next_current_state == current_state).all():
                 #any kind of obtacle which made bilbo not move
                 new_q = -100
             else:

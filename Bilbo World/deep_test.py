@@ -11,7 +11,7 @@ d = {TREASURE_CHAR: '16',
      OBSTACLE_CHAR: '20'}
 
 
-TOT_EPISODES = 1
+TOT_EPISODES = 100
 MAX_EPOCH = 400
 
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
@@ -22,15 +22,15 @@ bilbo=DeepQLearningAgentImage(PLAYER_CHAR)
 win=0
 lost=0
 nothingness=0
+fig = plt.figure(figsize=(20,20))
 for ep in range(TOT_EPISODES):
-    fig = plt.figure(figsize=(20,20))
     anim =[]
 
-    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=True)
+    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=False)
     #do deep Q-stuff
     game_ended=False
     epoch = 0
-    #current_state=bilbo.get_state()
+    current_state=bilbo.get_state()
     env = mondo.create_env(d)
 
     anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
@@ -41,35 +41,36 @@ for ep in range(TOT_EPISODES):
         action = bilbo.get_action(-1,possible_moves)
         #treasure_gone = bilbo.treasure_gone()
         bilbo.move(inverse_possible_moves[action])()
-        reward = bilbo.reward()
+        new_state = bilbo.get_state()
+        reward = bilbo.reward(current_state, new_state)
 
         #new_state = bilbo.get_state()
         #treasure_gone = bilbo.treasure_gone()
         game_ended = bilbo.game_ended()
-        #current_state = new_state
+        current_state = new_state
 
         env = mondo.create_env(d)
-        anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
+        anim.append((plt.pcolormesh(env, cmap='CMRmap'),))
     #print(mondo)
-    if reward==TREASURE_REWARD:
-        win+=1
-    elif reward==-DRAGON_PENALTY:
-        lost+=1
+    if reward == TREASURE_REWARD:
+        win += 1
+    elif reward == -DRAGON_PENALTY:
+        lost += 1
     else:
-        nothingness+=1
+        nothingness += 1
     print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}".format(win,lost,nothingness), end="\r")
 
-print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, epoch {}".format(win,lost,nothingness,epoch))
+print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}".format(win,lost,nothingness))
 #import ipdb; ipdb.set_trace()
 #if game_ended:
-im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
+#im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
                                    blit=True)
 #writer = animation.FFMpegWriter(fps=30)
 #im_ani.save('animation_video_50x50.mp4',writer=writer)
 
-ax = plt.gca()
-plt.axis('off')
+#ax = plt.gca()
+#plt.axis('off')
 #plt.title(title)
-plt.show()
+#plt.show()
 #else:
 #    print("Ha fatto schifo questa volta")
