@@ -85,6 +85,7 @@ class World:
             if self.rand:
                 new_spawn = self.random_spawn()
                 self.world[new_spawn] = TREASURE_CHAR
+                return 1
             return 1
         #BILBO was eaten
         if self.get_position(PLAYER_CHAR) == (-1, -1):
@@ -214,8 +215,13 @@ class World:
         p_pos = self.get_position(PLAYER_CHAR)
         t_pos = self.get_position(TREASURE_CHAR)
         d_pos = self.get_position(DRAGON_CHAR)
+        is_up_free = 1 if self.is_border((p_pos[0] + 1, p_pos[1])) else 0
+        is_down_free = 1 if self.is_border((p_pos[0] - 1, p_pos[1])) else 0
+        is_left_free = 1 if self.is_border((p_pos[0], p_pos[1] + 1)) else 0
+        is_right_free = 1 if self.is_border((p_pos[0] + 1, p_pos[1] - 1)) else 0
         state = [p_pos[0] - t_pos[0], p_pos[1] - t_pos[1],
-                 p_pos[0] - d_pos[0], p_pos[1] - d_pos[1]]
+                 p_pos[0] - d_pos[0], p_pos[1] - d_pos[1],
+                 is_up_free, is_down_free, is_left_free, is_right_free]
         return np.array(state)
 
 

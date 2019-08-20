@@ -13,7 +13,7 @@ PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 
 MAX_MEMORY = 5000
-MIN_MEMORY = 32
+MIN_MEMORY = 16
 
 
 
@@ -127,7 +127,8 @@ class DeepQLearningAgentImage(Agent):
     def __init__(self,char):
         "initialized the main class"
         super().__init__(char)
-        self.q_nn = self.initialize_nn(input_shape=(4,))
+        self.state_shape = 8
+        self.q_nn = self.initialize_nn(input_shape=(self.state_shape,))
         self.map = {TREASURE_CHAR: '16',
                     PLAYER_CHAR: '5',
                     DRAGON_CHAR: '10',
@@ -150,8 +151,7 @@ class DeepQLearningAgentImage(Agent):
 
     def get_qs(self, state):
         "return the predicted q-values from the NN"
-        #return self.q_nn.predict(state.reshape(-1, WORLD_DIM, WORLD_DIM, 1))[0]
-        return self.q_nn.predict(state.reshape(-1, 4))[0]
+        return self.q_nn.predict(state.reshape(-1, self.state_shape))[0]
 
     def get_action(self, epsilon, possible_moves):
         "return the action based on the epsilon-greedy policy"
@@ -162,7 +162,7 @@ class DeepQLearningAgentImage(Agent):
 
     def game_ended(self):
         "simply checks if the game has ended or not"
-        return not self.world.game_state() in [0, 1]
+        return not self.world.game_state() in [0,1]
 
     def reward(self, current_state, next_state):
         "returns the reward that bilbo gets for the action"
@@ -172,17 +172,9 @@ class DeepQLearningAgentImage(Agent):
         '''
         for the prediction do:
             env = world.create_env(d)
-            state=env.reshape(-1,env.shape[0],env.shape[1],1)
+            state=env.reshape(-1,self.state_shape)
             model.predict(state)
         using the -1 python should infer the batch size autmatically
-        the reshape is needed to match the following shape
-        (batch_size, img_height, img_width, number_of_channels)
-        in our case the number_of_channels is 1 beacuse I created a B&W image
-        for the fitting do:
-            X_train = collection of states (the env)
-            q_vals = collection of precedent (q_vals)
-            X_train.reshape(-1,X_train.shape[0],X_train.shape[1],1)
-            model.fit(X_train,q_vals)
         '''
         if os.path.isfile('./models/deep_model_'+str(WORLD_DIM)+'.model'):
             print('*******************************************')
@@ -201,29 +193,10 @@ class DeepQLearningAgentImage(Agent):
         print('***************************************')
         print('***************************************')
         model = Sequential()
-        #input shape is (DIM,DIM,1) 1 beacause they are Black&White
 
-        #for big world might need the convolution
-        #if it's too big (>100), one should use more Conv2D and/or MaxPooling2D layers
-        #here is an example inside the if condition
-        if WORLD_DIM > 30:
-            model.add(Conv2D(8, (3, 3), input_shape=input_shape, activation='relu'))
-            model.add(MaxPooling2D((2,2)))
-            model.add(Dropout(0.2))
-            model.add(Flatten())
-            model.add(Dense(512, activation='relu'))
-            #model.add(Dense(64,activation='relu'))
-
-        #for small world
-        else:
-            #model.add(Flatten(input_shape=input_shape))
-            #model.add(Dense(64, activation='relu'))
-            #model.add(Dense(512, activation='relu'))
-            model.add(Dense(8, input_shape=input_shape, activation='relu'))
-            model.add(Dense(6, activation='relu'))
-
-
-        #output node
+        model.add(Dense(2*self.state_shape, input_shape=input_shape, activation='relu'))
+        model.add(Dense(8, activation='relu'))
+        #output layer
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
                       optimizer='adam')
