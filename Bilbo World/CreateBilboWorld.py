@@ -23,7 +23,8 @@ class World:
             self.dim_y = dim_y
         else:
             self.dim_y = dim_x
-        self.player= bilbo
+        self.player = bilbo
+        self.rand = random_spawn
         bilbo.initialize_world(self)
         self.world = np.array([["" for x in range(self.dim_x)]
                                for y in range(self.dim_y)])
@@ -80,7 +81,12 @@ class World:
         #will be the
         #if the coin is eaten and he is at the exit again
         if self.get_position(TREASURE_CHAR) == (-1, -1):
-            return 1 #means he won
+            #return 1 #means he won
+            print('ole')
+            if self.rand:
+                new_spawn = self.random_spawn()
+                self.world[new_spawn] = TREASURE_CHAR
+            return 1
         #BILBO was eaten
         if self.get_position(PLAYER_CHAR) == (-1, -1):
             return 2 #he failed

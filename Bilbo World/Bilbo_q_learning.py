@@ -44,7 +44,7 @@ MAX_EPOCH = 1000
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
 inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
 
-file_name = "qtable_" + str(WORLD_DIM)
+file_name = "./models/qtable_" + str(WORLD_DIM)
 
 q_table = np.array([[[0.0 for moves in possible_moves]
                      for x in range(WORLD_DIM)]

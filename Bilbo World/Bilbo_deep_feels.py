@@ -80,7 +80,7 @@ for ep in range(TOT_EPISODES):
     epsilon *= decay_epsilon
     #each 10 episode save the model
     if ep % 10 == 0:
-        save_model(bilbo.q_nn,'deep_model_'+str(WORLD_DIM)+'.model')
+        save_model(bilbo.q_nn,'./models/deep_model_'+str(WORLD_DIM)+'.model')
 
 #save the model again in case the MAX_episodes was not divisible by 10
 save_model(bilbo.q_nn,'deep_model_'+str(WORLD_DIM)+'.model')

@@ -162,7 +162,7 @@ class DeepQLearningAgentImage(Agent):
 
     def game_ended(self):
         "simply checks if the game has ended or not"
-        return not self.world.game_state() == 0
+        return not self.world.game_state() in [0, 1]
 
     def reward(self, current_state, next_state):
         "returns the reward that bilbo gets for the action"
@@ -184,13 +184,13 @@ class DeepQLearningAgentImage(Agent):
             X_train.reshape(-1,X_train.shape[0],X_train.shape[1],1)
             model.fit(X_train,q_vals)
         '''
-        if os.path.isfile('deep_model_'+str(WORLD_DIM)+'.model'):
+        if os.path.isfile('./models/deep_model_'+str(WORLD_DIM)+'.model'):
             print('*******************************************')
             print('*******************************************')
             print('*Found an existent model, loading that one*')
             print('*******************************************')
             print('*******************************************')
-            model = load_model('deep_model_'+str(WORLD_DIM)+'.model')
+            model = load_model('./models/deep_model_'+str(WORLD_DIM)+'.model')
 
             print(model.summary())
             return model

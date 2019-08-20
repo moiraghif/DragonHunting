@@ -52,27 +52,28 @@ class Renderer():
         return self.img
 
 
-n15 = np.load('qtable_15.npy')
+WORLD_DIM = 15
+qtable = np.load('./models/qtable_'+ str(WORLD_DIM)+'.npy')
 
-world = np.array([["" for x in range(15)]
-                      for y in range(15)])
+world = np.array([["" for x in range(WORLD_DIM)]
+                      for y in range(WORLD_DIM)])
 
 np.random.seed(seed=1234)
 
-for i in range(15):
-    for j in range(15):
+world[round(WORLD_DIM/2)-1,WORLD_DIM-3]='☠'
+world[round(WORLD_DIM/2)-1,WORLD_DIM-1]='♚'
+
+for i in range(WORLD_DIM):
+    for j in range(WORLD_DIM):
         if ((np.random.rand() > 1 - 0.12) and (world[i, j]=='')):
             world[i,j]='█'
 
-world[round(15/2)-1,15-3]='☠'
-world[round(15/2)-1,15-1]='♚'
 
-
-for i in range(15):
-    for j in range(15):
+for i in range(WORLD_DIM):
+    for j in range(WORLD_DIM):
         if world[i,j] in ['☠','█','♚']:
             continue
-        action = np.argmax(n15[i,j])
+        action = np.argmax(qtable[i,j])
         if action==0:
             world[i,j]='⬆'
         elif action==1:
@@ -83,4 +84,4 @@ for i in range(15):
             world[i,j]='➡'
 
 renderer = Renderer(world, cell_size=100)
-renderer.render().save('PolicyMap.png')
+renderer.render().save('./plots/PolicyMap.png')

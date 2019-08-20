@@ -11,17 +11,17 @@ d = {TREASURE_CHAR: '16',
      OBSTACLE_CHAR: '20'}
 
 
-TOT_EPISODES = 100
-MAX_EPOCH = 400
+TOT_EPISODES = 1
+MAX_EPOCH = 200
 
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
 inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
 
 
-bilbo=DeepQLearningAgentImage(PLAYER_CHAR)
-win=0
-lost=0
-nothingness=0
+bilbo = DeepQLearningAgentImage(PLAYER_CHAR)
+win = 0
+lost = 0
+nothingness = 0
 fig = plt.figure(figsize=(20,20))
 for ep in range(TOT_EPISODES):
     anim =[]
@@ -38,7 +38,7 @@ for ep in range(TOT_EPISODES):
       #the near it gets to the dragon the more random the movement
         epoch += 1
         #ipdb.set_trace()
-        action = bilbo.get_action(-1,possible_moves)
+        action = bilbo.get_action(0, possible_moves)
         #treasure_gone = bilbo.treasure_gone()
         bilbo.move(inverse_possible_moves[action])()
         new_state = bilbo.get_state()
@@ -61,16 +61,11 @@ for ep in range(TOT_EPISODES):
     print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}".format(win,lost,nothingness), end="\r")
 
 print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}".format(win,lost,nothingness))
-#import ipdb; ipdb.set_trace()
-#if game_ended:
-#im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
-#                                   blit=True)
-#writer = animation.FFMpegWriter(fps=30)
-#im_ani.save('animation_video_50x50.mp4',writer=writer)
+im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
+                                   blit=False)
+writer = animation.FFMpegWriter(fps=30)
+im_ani.save('./videos/animation_video_deep_15x15.mp4',writer=writer)
 
-#ax = plt.gca()
-#plt.axis('off')
-#plt.title(title)
-#plt.show()
-#else:
-#    print("Ha fatto schifo questa volta")
+ax = plt.gca()
+plt.axis('off')
+plt.show()
