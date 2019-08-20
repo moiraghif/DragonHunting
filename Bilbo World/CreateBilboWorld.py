@@ -33,14 +33,14 @@ class World:
             np.random.seed(seed=1234)
             self.insert_obstacles()
         #the position can be changed later
-        if random_spawn:
+        if self.rand:
             treasure_spawn = self.random_spawn()
             self.world[treasure_spawn] = TREASURE_CHAR
             dragon_spawn = self.random_spawn()
             self.world[dragon_spawn] = DRAGON_CHAR
         else:
             self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
-            self.world[round(self.dim_y/2)-1, dim_x-1] = TREASURE_CHAR
+            self.world[round(self.dim_y/2)-1, self.dim_x-1] = TREASURE_CHAR
         bilbo_entrance = self.random_spawn(entrance)
         self.world[bilbo_entrance] = PLAYER_CHAR
 
@@ -82,7 +82,6 @@ class World:
         #if the coin is eaten and he is at the exit again
         if self.get_position(TREASURE_CHAR) == (-1, -1):
             #return 1 #means he won
-            print('ole')
             if self.rand:
                 new_spawn = self.random_spawn()
                 self.world[new_spawn] = TREASURE_CHAR
@@ -100,13 +99,13 @@ class World:
         if game_state == 2:
             return -DRAGON_PENALTY
 
-        if not moving_reward:
+        if not moving_reward: #for q learning
             return -WALKING_PENALTY
         treasure_pos = np.array(self.get_position(TREASURE_CHAR))
         player_old_pos = current_state[0:2]
         player_new_pos = next_state[0:2]
         if np.sum(np.abs(player_old_pos - treasure_pos)) <= np.sum(np.abs(player_new_pos - treasure_pos)):
-            return -2
+            return -1
         return 1 #positive if closing in to the treasure
 
 
