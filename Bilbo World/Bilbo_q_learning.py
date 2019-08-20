@@ -21,7 +21,7 @@ MIN_EPSILON = 0.01
 
 
 #In case of 15x15
-TOT_EPISODES = 5000
+TOT_EPISODES = 1001
 MAX_EPOCH = 1000
 
 # In case of 20x20
@@ -121,6 +121,13 @@ for ep in range(TOT_EPISODES):
 print('')
 np.save(file_name, q_table)
 
+#policy video
+ani = animation.ArtistAnimation(fig, policy, interval=1, blit=True, repeat_delay=1000)
+writer = animation.FFMpegWriter(fps=25)
+plt.axis('off')
+ani.save('./videos/policy_video_'+str(WORLD_DIM)+'.mp4', writer=writer)
+plt.axis('on')
+
 plt.rc('xtick', labelsize=15)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=15)
 def cumsum_sma(array, period):
@@ -146,10 +153,3 @@ plt.legend([reward, ra_reward], ['Epochs', 'Rolling Average'], loc=5, prop={'siz
 plt.xlabel('Episodes', fontsize=40)
 plt.ylabel('Epochs', fontsize=40)
 fig.savefig('./plots/epoch_'+str(WORLD_DIM)+'.png')
-
-
-#policy video
-ani = animation.ArtistAnimation(fig, policy, interval=1, blit=True, repeat_delay=1000)
-writer = animation.FFMpegWriter(fps=25)
-plt.axis('off')
-ani.save('./videos/policy_video_'+str(WORLD_DIM)+'.mp4', writer=writer)
