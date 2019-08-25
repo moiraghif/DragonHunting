@@ -55,14 +55,17 @@ for ep in range(TOT_EPISODES):
         env = mondo.create_env(d)
         anim.append((plt.pcolormesh(env, cmap='CMRmap'),))
         if game_ended or epoch + 1 == MAX_EPOCH:
-            plt.text(0, 0.5, "Total Reward:" + str(tot_reward) + " Total Epoch:" + str(epoch+1), color='white', fontsize=16)
+            plt.text(0, 0.5, "Total Reward:" + str(tot_reward) + " Total Epoch:" + str(epoch+1), color='white', fontsize=20)
 
 print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, Tot Reward: {}, Epoch survived: {}".format(win,lost,nothingness, tot_reward, epoch))
 im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
                                    blit=False)
-writer = animation.FFMpegWriter(fps=30)
-#im_ani.save('./videos/animation_video_deep_15x15.mp4',writer=writer)
 
 ax = plt.gca()
 plt.axis('off')
+
+writer = animation.FFMpegWriter(fps=30)
+im_ani.save('./videos/animation_video_deep_15x15.mp4',writer=writer)
+
+
 plt.show()
