@@ -12,7 +12,7 @@ d = {TREASURE_CHAR: '16',
 
 
 TOT_EPISODES = 1
-MAX_EPOCH = 200
+MAX_EPOCH = 1000
 
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
 inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
@@ -22,49 +22,46 @@ bilbo = DeepQLearningAgentImage(PLAYER_CHAR)
 win = 0
 lost = 0
 nothingness = 0
+tot_reward = 0
 fig = plt.figure(figsize=(20,20))
 for ep in range(TOT_EPISODES):
     anim =[]
 
-    mondo=World(WORLD_DIM,bilbo=bilbo,obstacle=False,random_spawn=True)
+    mondo=World(WORLD_DIM, bilbo=bilbo, obstacle=False, random_spawn=True)
     #do deep Q-stuff
     game_ended=False
     epoch = 0
     current_state=bilbo.get_state()
     env = mondo.create_env(d)
 
-    anim.append((plt.pcolormesh(env,cmap='CMRmap'),))
+    anim.append((plt.pcolormesh(env, cmap='CMRmap'),))
     while not game_ended and epoch < MAX_EPOCH:
       #the near it gets to the dragon the more random the movement
         epoch += 1
-        #ipdb.set_trace()
+        mondo.move_dragon()
         action = bilbo.get_action(0, possible_moves)
-        #treasure_gone = bilbo.treasure_gone()
         bilbo.move(inverse_possible_moves[action])()
         new_state = bilbo.get_state()
         reward = bilbo.reward(current_state, new_state)
 
-        #new_state = bilbo.get_state()
-        #treasure_gone = bilbo.treasure_gone()
+        tot_reward += reward
         game_ended = bilbo.game_ended()
         current_state = new_state
 
+        if reward == TREASURE_REWARD:
+            win += 1
+        elif reward == -DRAGON_PENALTY:
+            lost += 1
         env = mondo.create_env(d)
         anim.append((plt.pcolormesh(env, cmap='CMRmap'),))
-    #print(mondo)
-    if reward == TREASURE_REWARD:
-        win += 1
-    elif reward == -DRAGON_PENALTY:
-        lost += 1
-    else:
-        nothingness += 1
-    print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}".format(win,lost,nothingness), end="\r")
+        if game_ended or epoch + 1 == MAX_EPOCH:
+            plt.text(0, 0.5, "Total Reward:" + str(tot_reward) + " Total Epoch:" + str(epoch+1), color='white', fontsize=16)
 
-print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}".format(win,lost,nothingness))
+print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, Tot Reward: {}, Epoch survived: {}".format(win,lost,nothingness, tot_reward, epoch))
 im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
                                    blit=False)
 writer = animation.FFMpegWriter(fps=30)
-im_ani.save('./videos/animation_video_deep_15x15.mp4',writer=writer)
+#im_ani.save('./videos/animation_video_deep_15x15.mp4',writer=writer)
 
 ax = plt.gca()
 plt.axis('off')

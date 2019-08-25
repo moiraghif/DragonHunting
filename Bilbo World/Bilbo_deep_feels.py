@@ -1,15 +1,20 @@
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+#import matplotlib.animation as animation
 from CreateBilboWorld import *
 from agents import *
 import time
+
+def cumsum_average(array):
+    ret = np.cumsum(array, dtype=float)
+    ones = np.array(range(1, len(array)+1))
+    return ret / ones
 
 d = {TREASURE_CHAR: '16',
      PLAYER_CHAR: '5',
      DRAGON_CHAR: '10',
      OBSTACLE_CHAR: '20'}
 
-TOT_EPISODES = 10000
+TOT_EPISODES = 20000
 MAX_EPOCH = 500
 
 possible_moves = {'up':0,'down':1,'left':2,'right':3}
@@ -19,7 +24,7 @@ inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
 gamma = 0.8
 epsilon = 0.5
 epsilon_min = 0.01
-decay_epsilon = 0.999
+decay_epsilon = 0.9999
 
 bilbo = DeepQLearningAgentImage(PLAYER_CHAR)
 
@@ -31,6 +36,8 @@ epsilons = []
 tot_wins = []
 tot_loss = []
 start_time = time.time()
+
+fig = plt.figure(figsize=(15,10))
 for ep in range(TOT_EPISODES):
     #recreate the environment
     mondo = World(WORLD_DIM, bilbo=bilbo, obstacle=False, random_spawn=True)
@@ -46,7 +53,7 @@ for ep in range(TOT_EPISODES):
         #the near it gets to the dragon the more random the movement
         #in order to explore more around it
         epoch += 1
-        #epsilon_fear = bilbo.fear(epsilon) if epsilon > epsilon_min else bilbo.fear(epsilon_min)
+        mondo.move_dragon()
         action = bilbo.get_action(epsilon, possible_moves)
 
         bilbo.move(inverse_possible_moves[action])()
@@ -75,8 +82,8 @@ for ep in range(TOT_EPISODES):
         tot_reward += reward
         if end_game:
             break
-        if len(tot_wins)>0:
-            if epoch == MAX_EPOCH and won==tot_wins[-1]:
+        if len(tot_wins) > 0:
+            if epoch == MAX_EPOCH and won == tot_wins[-1]:
                 lost += 1
 
 
@@ -91,23 +98,34 @@ for ep in range(TOT_EPISODES):
     #each 10 episode save the model
     if ep % 10 == 0:
         save_model(bilbo.q_nn,'./models/deep_model_'+str(WORLD_DIM)+'.model')
+        plt.subplot(221)
+        reward_plot, = plt.plot(rewards)
+        ra_reward, = plt.plot(cumsum_average(rewards))
+        plt.legend([reward_plot, ra_reward], ['Reward', 'Rolling Average'], loc = 5)
+        plt.xlabel('Episode')
+        plt.ylabel('Reward')
+
+        plt.subplot(222)
+        win_plot, = plt.plot(tot_wins)
+        lost_plot, = plt.plot(tot_loss)
+        plt.legend([win_plot, lost_plot], ['Total Wins', 'Total Non Wins'], loc = 5)
+        plt.xlabel('Episodes')
+        plt.ylabel('Tot Wins and Losing')
+
+        plt.draw()
+        plt.pause(0.001)
 
 #save the model again in case the MAX_episodes was not divisible by 10
-save_model(bilbo.q_nn,'deep_model_'+str(WORLD_DIM)+'.model')
-print("Atlast the episilon value was ", epsilon)
+save_model(bilbo.q_nn,'./models/deep_model_'+str(WORLD_DIM)+'.model')
 
-
+plt.show()
 ### PLOTS
 plt.rc('xtick', labelsize=15)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=15)
-def cumsum_sma(array, period):
-    ret = np.cumsum(array, dtype=float)
-    ret[period:] = ret[period:] - ret[:-period]
-    return ret[period - 1:] / period
 
 fig = plt.figure(figsize=(20,20))
 reward, = plt.plot(rewards)
-ra_reward, = plt.plot(cumsum_sma(rewards,100))
+ra_reward, = plt.plot(cumsum_average(rewards))
 plt.legend([reward, ra_reward], ['Reward', 'Rolling Average'], loc = 5, prop={'size': 20})
 plt.xlabel('Episode',fontsize=40)
 plt.ylabel('Reward',fontsize=40)
@@ -115,9 +133,9 @@ fig.savefig('./plots/reward_deep_'+str(WORLD_DIM)+'.png')
 
 
 fig = plt.figure(figsize=(20,20))
-epochs, = plt.plot(epochs)
-epochs_ra, = plt.plot(cumsum_sma(epochs,100))
-plt.legend([reward, ra_reward], ['Epochs', 'Rolling Average'], loc = 5, prop={'size': 20})
+win, = plt.plot(tot_wins)
+lost, = plt.plot(tot_loss)
+plt.legend([win, lost], ['Total Wins', 'Total Non Wins'], loc = 5, prop={'size': 20})
 plt.xlabel('Episodes',fontsize=40)
-plt.ylabel('Epochs',fontsize=40)
+plt.ylabel('Tot Wins and Losing',fontsize=40)
 fig.savefig('./plots/epoch_deep_'+str(WORLD_DIM)+'.png')

@@ -103,11 +103,14 @@ class World:
         if not moving_reward: #for q learning
             return -WALKING_PENALTY
         treasure_pos = np.array(self.get_position(TREASURE_CHAR))
+        #reward can either return a negative constant (-1) or 0, but to have a faster
+        #convergence it's better to give him a positive reward when he gets near
+        #the objective
         player_old_pos = current_state[0:2]
         player_new_pos = next_state[0:2]
         if np.sum(np.abs(player_old_pos - treasure_pos)) <= np.sum(np.abs(player_new_pos - treasure_pos)):
             return -1
-        return 1 #positive if closing in to the treasure
+        return 2 #positive if closing in to the treasure
 
 
     def is_border(self, pos):
@@ -165,6 +168,35 @@ class World:
         player_pos = self.get_position(self.player.char)
         return player_pos
 
+    def move_dragon(self):
+        action = np.random.randint(4)
+        if action == 0:
+            self.move_dragon_of(x=+1)
+        elif action == 1:
+            self.move_dragon_of(x=-1)
+        elif action == 2:
+            self.move_dragon_of(y=+1)
+        elif action == 3:
+            self.move_dragon_of(y=-1)
+
+    def move_dragon_of(self, x=0, y=0):
+        pos_from = self.get_position(DRAGON_CHAR)
+        if not pos_from:
+            return False
+        # check if the movement is in just one direction and not null
+        if (x > 0 and y > 0) or x + y == 0:
+            return False
+        pos_to = (pos_from[0] + y, pos_from[1] + x)
+
+        if not self.world[pos_from] or not self.is_border(pos_to):
+            return False
+        # Kill Bilbo
+        if self.world[pos_to] == PLAYER_CHAR or self.world[pos_to] == TREASURE_CHAR:
+            return False
+        self.world[pos_from], self.world[pos_to] = "", self.world[pos_from]
+        return True
+
+
     def __str__(self):
         "Convert the world into string"
         txt = "┌" + "─" * (2 * self.dim_x - 1) + "┐\n│"
@@ -209,19 +241,19 @@ class World:
         Creates the input ''image'' for the DQN
         if image is False the states are the coordinates of the entities
         '''
-        env = self.create_env(d)
         if image:
+            env = self.create_env(d)
             return env/np.max(env)
         p_pos = self.get_position(PLAYER_CHAR)
         t_pos = self.get_position(TREASURE_CHAR)
         d_pos = self.get_position(DRAGON_CHAR)
-        is_up_free = 1 if self.is_border((p_pos[0] + 1, p_pos[1])) else 0
-        is_down_free = 1 if self.is_border((p_pos[0] - 1, p_pos[1])) else 0
-        is_left_free = 1 if self.is_border((p_pos[0], p_pos[1] + 1)) else 0
-        is_right_free = 1 if self.is_border((p_pos[0] + 1, p_pos[1] - 1)) else 0
+        is_down_free = 1 if self.is_border((p_pos[0] + 1, p_pos[1])) else 0
+        is_up_free = 1 if self.is_border((p_pos[0] - 1, p_pos[1])) else 0
+        is_right_free = 1 if self.is_border((p_pos[0], p_pos[1] + 1)) else 0
+        is_left_free = 1 if self.is_border((p_pos[0] + 1, p_pos[1] - 1)) else 0
         state = [p_pos[0] - t_pos[0], p_pos[1] - t_pos[1],
                  p_pos[0] - d_pos[0], p_pos[1] - d_pos[1],
-                 is_up_free, is_down_free, is_left_free, is_right_free]
+                 is_down_free, is_up_free, is_right_free, is_left_free]
         return np.array(state)
 
 

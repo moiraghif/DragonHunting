@@ -8,6 +8,9 @@ OBSTACLE_CHAR = "█"
 PLAYER1_CHAR = "P"
 PLAYER2_CHAR = "Q"
 
+MAX_MEMORY = 5000
+MIN_MEMORY = 16
+
 
 WORLD = nparray([["" for x in range(20)]
                  for y in range(20)])

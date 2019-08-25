@@ -2,7 +2,7 @@ import os
 from collections import deque
 import random
 from tensorflow.keras.models import Sequential, save_model, load_model
-from tensorflow.keras.layers import Dense, Dropout, Conv2D, MaxPooling2D, Flatten
+from tensorflow.keras.layers import Dense
 import numpy as np
 
 
@@ -29,7 +29,6 @@ class Agent:
         # a list of actions (functions) that the Agent can do
         self.actions = movements + []
         self.action_size = len(self.actions)
-        self.function_memory = [] #no more needed will remove later
 
     def initialize_world(self, world):
         "Initialize the world for Bilbo"
@@ -237,7 +236,7 @@ class DeepQLearningAgentImage(Agent):
                 new_q = reward
             elif (next_current_state == current_state).all():
                 #any kind of obtacle which made bilbo not move
-                new_q = -100
+                new_q = -7
             else:
                 max_future_q = np.max(future_qs_list[index])
                 new_q = reward + gamma * max_future_q

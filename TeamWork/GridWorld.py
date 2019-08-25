@@ -68,7 +68,8 @@ class World:
             self.world[tuple(pos0)] = ""
             self.players[agent] = np.array([*pos])
             delta = enemy_dist - self.get_dist_closer_enemy(agent)
-            return -1 if delta > 0 else -3
+            #return 0
+            return 10 if delta > 0 else -2
         return -5
 
     def attack(self, agent):
@@ -87,10 +88,10 @@ class World:
             if dist == 2:
                 enemy.healt -= 1
                 if enemy.type == agent.type:
-                    reward -= 10
+                    reward -= 100
                 else:
-                    reward += (10 if enemy.alive() else 20)
-        return reward if reward > 0 else -10
+                    reward += (100 if enemy.alive() else 2000)
+        return reward if reward != 0 else -70
 
     def get_dist_to_enemy(self, agent, enemy):
         return nx.shortest_path_length(self.graph,
@@ -98,16 +99,19 @@ class World:
                                        self.pos_to_node(self.players[enemy]))
 
     def get_dist_closer_enemy(self, agent):
+        enemies = [enemy for enemy in self.players.keys()
+                 if enemy.char != agent.char and enemy.alive() and enemy.type != agent.type]
+        if len(enemies) < 1:
+            return 0
         return min([
             nx.shortest_path_length(self.graph,
                                     self.pos_to_node(self.players[agent]),
                                     self.pos_to_node(self.players[enemy]))
-            for enemy in self.players.keys()
-            if enemy.char != agent.char and enemy.alive()])
+            for enemy in enemies])
 
     def get_dist_to_enemies(self, agent):
         enemies = [p for p in self.players.keys()
-                   if p.char != agent.char and p.alive()]
+                   if p.char != agent.char and p.alive() and p.type != agent.type]
         paths = np.array([nx.shortest_path_length(self.graph,
                                                   self.pos_to_node(
                                                       self.players[agent]),
@@ -120,7 +124,7 @@ class World:
         # try:
         pos0 = self.pos_to_node(self.players[agent])
         enemy_pos = [self.pos_to_node(k) for p, k in self.players.items()
-                     if p.char != agent.char and p.alive()]
+                     if p.char != agent.char and p.alive() and p.type != agent.type]
         if not enemy_pos:
             return 0, 0
         pos = [nx.shortest_path(self.graph, pos0, e)
@@ -148,7 +152,7 @@ class World:
             return fn(), False
         if self.pos_to_node(self.players[agent]) in self.graph.nodes:
             self.put_p_in_grave(agent)
-            return -10, True
+            return -1000, True
         return 0, True
 
     def get_pos(self,player):
@@ -169,11 +173,11 @@ class World:
         self.world[actual_pos] = ''
         self.players[player]=np.array(grave)
 
-    def get_current_state(self,agent):
+    def get_current_state(self, agent):
         others = [p for p in self.players.keys() if p.char != agent.char]
 
         if not agent.alive():
-            state = [0,0,0,0]
+            state = [0, 0, 0, 0]
             return tuple(state)
 
         state = []
@@ -209,6 +213,48 @@ class World:
     def save_qtable(self):
         for p in self.players.keys():
             p.save_qtable()
+
+    #Deep Learing stuff
+    def deep_learning_state(self, agent):
+        others = [p for p in self.players.keys() if p.char != agent.char]
+
+        if not agent.alive():
+            state = [0, 0, 0, 0, 0]
+            return tuple(state)
+
+        state = []
+        for p in others:
+            if not p.alive():
+                state.append(0)
+                state.append(0)
+                continue
+
+            pos0 = self.pos_to_node(self.players[agent])
+            enemy_pos = [self.pos_to_node(self.players[p])]
+            pos = [nx.shortest_path(self.graph, pos0, e)
+                   for e in enemy_pos]
+            pos_len = np.array(list(map(len, pos)))
+            min_pos = [np.array(list(map(int, p.split(" "))))
+                       for p in pos[np.argmin(pos_len)]]
+
+            direction = min_pos[1] - min_pos[0]
+            if direction[0] == +1:
+                d = 0
+            elif direction[0] == -1:
+                d = 1
+            elif direction[1] == +1:
+                d = 2
+            elif direction[1] == -1:
+                d = 3
+            dist = len(min_pos)
+            state.append(d)
+            state.append(dist - 1)
+        state.append(agent.healt)
+        return np.array(state)
+
+    def save_NN(self):
+        for p in self.players.keys():
+            p.save_NN()
 
     def __str__(self):
         "Convert the world into string"
