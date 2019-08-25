@@ -14,11 +14,11 @@ d = {TREASURE_CHAR: '16',
 TOT_EPISODES = 1
 MAX_EPOCH = 1000
 
-possible_moves = {'up':0,'down':1,'left':2,'right':3}
-inverse_possible_moves = {0:'up',1:'down',2:'left',3:'right'}
+possible_moves = {'up':0, 'down':1, 'left':2, 'right':3}
+inverse_possible_moves = {0: 'up',1: 'down',2: 'left',3: 'right'}
 
 
-bilbo = DeepQLearningAgentImage(PLAYER_CHAR)
+bilbo = DeepQLearningAgent(PLAYER_CHAR)
 win = 0
 lost = 0
 nothingness = 0
@@ -57,7 +57,7 @@ for ep in range(TOT_EPISODES):
         if game_ended or epoch + 1 == MAX_EPOCH:
             plt.text(0, 0.5, "Total Reward:" + str(tot_reward) + " Total Epoch:" + str(epoch+1), color='white', fontsize=20)
 
-print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, Tot Reward: {}, Epoch survived: {}".format(win,lost,nothingness, tot_reward, epoch))
+print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, Tot Reward: {}, Epoch survived: {}".format(win, lost, nothingness, tot_reward, epoch))
 im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
                                    blit=False)
 

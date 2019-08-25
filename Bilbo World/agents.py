@@ -117,11 +117,10 @@ class QLearningAgent(Agent):
         "return the reward for the action taken by the agent"
         return self.world.reward()
 
-class DeepQLearningAgentImage(Agent):
+class DeepQLearningAgent(Agent):
     '''
-    The DeepQLearningAgent whose input is the matrix of the world
-    and this matrix represent the image of the world in Black and White
-    the image has the pixel as the dimension of the world
+    The DeepQLearningAgent whose input is the difference of the coordinates
+    of bilbo with treasure and dragon, and if the surround of bilbo is free
     '''
     def __init__(self,char):
         "initialized the main class"
@@ -141,7 +140,6 @@ class DeepQLearningAgentImage(Agent):
 
     def get_state(self):
         "reshapes the state for the NN"
-        #return self.world.deep_normalized_state(self.map, image=True).reshape(WORLD_DIM, WORLD_DIM, 1)
         return self.world.deep_normalized_state(self.map, image=False)
 
     def treasure_gone(self):
@@ -161,7 +159,7 @@ class DeepQLearningAgentImage(Agent):
 
     def game_ended(self):
         "simply checks if the game has ended or not"
-        return not self.world.game_state() in [0,1]
+        return not self.world.game_state() in [0, 1]
 
     def reward(self, current_state, next_state):
         "returns the reward that bilbo gets for the action"
@@ -207,7 +205,7 @@ class DeepQLearningAgentImage(Agent):
         self.memory.append(knowledge)
 
     def add_high_knowledge(self, knowledge):
-        "appends the game state in the memory thus adding knowledge for DQN"
+        "appends the game state in the reward_memory thus adding knowledge for DQN"
         self.hight_reward_memory.append(knowledge)
 
     def train(self, gamma):

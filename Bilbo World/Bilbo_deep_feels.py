@@ -26,7 +26,7 @@ epsilon = 0.5
 epsilon_min = 0.01
 decay_epsilon = 0.9999
 
-bilbo = DeepQLearningAgentImage(PLAYER_CHAR)
+bilbo = DeepQLearningAgent(PLAYER_CHAR)
 
 won = 0
 lost = 0
