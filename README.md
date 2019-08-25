@@ -1,4 +1,7 @@
 # DragonHunting
+
+![Deep Model](https://github.com/moiraghif/DragonHunting/blob/master/Bilbo%20World/videos/15x15_deep.gif)
+
 Is the AI brave enought to face a dragon?
 
 Really basic Q-learning well explained: https://www.learndatasci.com/tutorials/reinforcement-q-learning-scratch-python-openai-gym/
