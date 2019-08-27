@@ -247,3 +247,75 @@ class DeepQLearningAgent(Agent):
             y.append(current_qs)
 
         self.q_nn.fit(np.array(X), np.array(y), batch_size=32, verbose=0, shuffle=False)
+
+
+class DeepQLearningAgentGA(Agent):
+    '''
+    The DeepQLearningAgent whose input is the difference of the coordinates
+    of bilbo with treasure and dragon, and if the surround of bilbo is free
+    '''
+    def __init__(self,char):
+        "initialized the main class"
+        super().__init__(char)
+        self.state_shape = 8
+        self.q_nn = self.initialize_nn(input_shape=(self.state_shape,))
+        self.map = {TREASURE_CHAR: '16',
+                    PLAYER_CHAR: '5',
+                    DRAGON_CHAR: '10',
+                    OBSTACLE_CHAR: '20'}
+
+    def learning_function(self, alpha, gamma, x_old, reward, x_new):
+        "the Q-learning function"
+        return (1-alpha) * x_old + alpha*(reward + gamma*x_new)
+
+    def get_state(self):
+        "reshapes the state for the NN"
+        return self.world.deep_normalized_state(self.map, image=False)
+
+    def treasure_gone(self):
+        "checks if the treasure still exists"
+        return self.world.treasure_gone()
+
+    def get_qs(self, state):
+        "return the predicted q-values from the NN"
+        return self.q_nn.predict(state.reshape(-1, self.state_shape))[0]
+
+    def get_action(self):
+        "return the action based on the epsilon-greedy policy"
+        return np.argmax(self.get_qs(self.get_state()))
+
+
+    def game_ended(self):
+        "simply checks if the game has ended or not"
+        return not self.world.game_state() in [0, 1]
+
+    def reward(self, current_state, next_state):
+        "returns the reward that bilbo gets for the action"
+        return self.world.reward(current_state, next_state, moving_reward=True)
+
+    def initialize_nn(self, input_shape):
+        '''
+        for the prediction do:
+            env = world.create_env(d)
+            state=env.reshape(-1,self.state_shape)
+            model.predict(state)
+        using the -1 python should infer the batch size autmatically
+        '''
+        model = Sequential()
+
+        #model.add(Dense(2*self.state_shape, input_shape=input_shape, activation='relu'))
+        #model.add(Dense(8, activation='relu'))
+        #output layer
+        model.add(Dense(self.action_size, input_shape=input_shape, activation='linear'))
+        model.compile(loss='mse',
+                      optimizer='adam')
+        return model
+
+    def get_weights(self):
+        return self.q_nn.get_weights()
+
+    def set_weights(self, weight):
+        self.q_nn.set_weights(weight)
+
+    def save_model(self):
+        save_model(self.q_nn,'./models/deep_model_ga_'+str(WORLD_DIM)+'.model')

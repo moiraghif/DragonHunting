@@ -1,16 +1,16 @@
 import numpy as np
 import re
 from PIL import Image
-from agents import Agent, QLearningAgent, DeepQLearningAgentImage, WORLD_DIM
+from agents import *
 
 DRAGON_CHAR = '☠'
-DRAGON_PENALTY = 10
+DRAGON_PENALTY = 5
 TREASURE_CHAR = '♚'
-TREASURE_REWARD = 15
+TREASURE_REWARD = 10
 PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 OBSTACLE_CONST = 0.12
-OBSTACLE_PENALTY = 5
+OBSTACLE_PENALTY = 1
 
 WALKING_PENALTY = 1
 TOO_MUCH_WALK_PENALTY = 49
@@ -25,7 +25,8 @@ class World:
             self.dim_y = dim_x
         self.player = bilbo
         self.rand = random_spawn
-        bilbo.initialize_world(self)
+        if bilbo:
+            bilbo.initialize_world(self)
         self.world = np.array([["" for x in range(self.dim_x)]
                                for y in range(self.dim_y)])
         #making the obstacles options
@@ -41,8 +42,9 @@ class World:
         else:
             self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
             self.world[round(self.dim_y/2)-1, self.dim_x-1] = TREASURE_CHAR
-        bilbo_entrance = self.random_spawn(entrance)
-        self.world[bilbo_entrance] = PLAYER_CHAR
+        if bilbo:
+            bilbo_entrance = self.random_spawn(entrance)
+            self.world[bilbo_entrance] = PLAYER_CHAR
 
 
         #this should be in agent class
@@ -102,6 +104,9 @@ class World:
 
         if not moving_reward: #for q learning
             return -WALKING_PENALTY
+
+        if (current_state==next_state).all():
+            return -OBSTACLE_PENALTY
         treasure_pos = np.array(self.get_position(TREASURE_CHAR))
         #reward can either return a negative constant (-1) or 0, but to have a faster
         #convergence it's better to give him a positive reward when he gets near
@@ -109,8 +114,8 @@ class World:
         player_old_pos = current_state[0:2]
         player_new_pos = next_state[0:2]
         if np.sum(np.abs(player_old_pos - treasure_pos)) <= np.sum(np.abs(player_new_pos - treasure_pos)):
-            return -1
-        return 2 #positive if closing in to the treasure
+            return 0
+        return 0 #positive if closing in to the treasure
 
 
     def is_border(self, pos):
@@ -255,6 +260,27 @@ class World:
                  p_pos[0] - d_pos[0], p_pos[1] - d_pos[1],
                  is_down_free, is_up_free, is_right_free, is_left_free]
         return np.array(state)
+
+    def set_bilbo(self, bilbo):
+        self.player = bilbo
+        bilbo.initialize_world(self)
+        #if self.rand:
+        #    treasure_spawn = self.random_spawn()
+        #    self.world[treasure_spawn] = TREASURE_CHAR
+        #    dragon_spawn = self.random_spawn()
+        #    self.world[dragon_spawn] = DRAGON_CHAR
+        #else:
+        #    self.world[round(self.dim_y/2)-1, self.dim_x-3] = DRAGON_CHAR
+        #    self.world[round(self.dim_y/2)-1, self.dim_x-1] = TREASURE_CHAR
+        for x in range(self.dim_x):
+            for y in range(self.dim_y):
+                if self.world[y,x] == PLAYER_CHAR or self.world[y,x] == DRAGON_CHAR:
+                    self.world[y,x] = ''
+        dragon_spawn = self.random_spawn()
+        self.world[dragon_spawn] = DRAGON_CHAR
+
+        bilbo_entrance = self.random_spawn()
+        self.world[bilbo_entrance] = PLAYER_CHAR
 
 
 if __name__ == '__main__':
