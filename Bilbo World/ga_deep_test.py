@@ -40,6 +40,7 @@ for ep in range(TOT_EPISODES):
     while not game_ended and epoch < MAX_EPOCH:
       #the near it gets to the dragon the more random the movement
         epoch += 1
+        mondo.move_dragon()
         action = bilbo.get_action()
         bilbo.move(inverse_possible_moves[action])()
         new_state = bilbo.get_state()
@@ -65,8 +66,7 @@ im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
 ax = plt.gca()
 plt.axis('off')
 
-writer = animation.FFMpegWriter(fps=30)
-im_ani.save('./videos/animation_video_deep_ga_15x15.mp4',writer=writer)
-
-
 plt.show()
+
+writer = animation.FFMpegWriter(fps=20)
+im_ani.save('./videos/animation_video_deep_ga_15x15.mp4',writer=writer)
