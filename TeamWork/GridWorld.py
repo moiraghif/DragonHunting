@@ -69,7 +69,7 @@ class World:
             self.players[agent] = np.array([*pos])
             delta = enemy_dist - self.get_dist_closer_enemy(agent)
             #return 0
-            return 10 if delta > 0 else -2
+            return 2 if delta > 0 else -2
         return -5
 
     def attack(self, agent):
@@ -88,10 +88,10 @@ class World:
             if dist == 2:
                 enemy.healt -= 1
                 if enemy.type == agent.type:
-                    reward -= 100
+                    reward -= 10
                 else:
-                    reward += (100 if enemy.alive() else 2000)
-        return reward if reward != 0 else -70
+                    reward += (10 if enemy.alive() else 20)
+        return reward if reward != 0 else -5
 
     def get_dist_to_enemy(self, agent, enemy):
         return nx.shortest_path_length(self.graph,
@@ -152,7 +152,7 @@ class World:
             return fn(), False
         if self.pos_to_node(self.players[agent]) in self.graph.nodes:
             self.put_p_in_grave(agent)
-            return -1000, True
+            return -10, True
         return 0, True
 
     def get_pos(self,player):

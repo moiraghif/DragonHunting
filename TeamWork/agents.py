@@ -18,7 +18,7 @@ class Agent:
         self.world = None
         self.healt = 10 if self.type == 'p' else 12
         self.temp_healt = self.healt
-        self.qfile = "qtable_" + self.char
+        self.qfile = "./models/qtable_" + self.char
         # a list of actions (functions) that the Agent can do
         self.alpha = 0.5
         self.gamma = 0.9
