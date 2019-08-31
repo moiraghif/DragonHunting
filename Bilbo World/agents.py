@@ -216,7 +216,7 @@ class DeepQLearningAgent(Agent):
 
         # random elements from memory
         minibatch = random.sample(self.memory, 16)
-        minibatch.extend(random.sample(self.hight_reward_memory,16))
+        minibatch.extend(random.sample(self.hight_reward_memory, 16))
 
         current_states = np.array([memory[0] for memory in minibatch])
         current_qs_list = self.q_nn.predict(current_states)
@@ -317,5 +317,8 @@ class DeepQLearningAgentGA(Agent):
     def set_weights(self, weight):
         self.q_nn.set_weights(weight)
 
-    def save_model(self):
-        save_model(self.q_nn,'./models/deep_model_ga_'+str(WORLD_DIM)+'.model')
+    def save_model(self, name=None):
+        if name:
+            save_model(self.q_nn, name)
+        else:
+            save_model(self.q_nn,'./models/deep_model_ga_'+str(WORLD_DIM)+'.model')

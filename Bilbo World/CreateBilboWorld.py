@@ -115,7 +115,7 @@ class World:
         player_new_pos = next_state[0:2]
         if np.sum(np.abs(player_old_pos - treasure_pos)) <= np.sum(np.abs(player_new_pos - treasure_pos)):
             return 0
-        return 0 #positive if closing in to the treasure
+        return 0 #if closing in to the treasure
 
 
     def is_border(self, pos):

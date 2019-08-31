@@ -19,7 +19,7 @@ inverse_possible_moves = {0: 'up',1: 'down',2: 'left',3: 'right'}
 
 
 bilbo = DeepQLearningAgentGA(PLAYER_CHAR)
-bilbo.q_nn = load_model('./models/deep_model_ga_'+str(WORLD_DIM)+'.model')
+bilbo.q_nn = load_model('./models/deep_model_basic_ga_'+str(WORLD_DIM)+'.model')
 win = 0
 lost = 0
 nothingness = 0
@@ -68,5 +68,5 @@ plt.axis('off')
 
 plt.show()
 
-writer = animation.FFMpegWriter(fps=20)
-im_ani.save('./videos/animation_video_deep_ga_15x15.mp4',writer=writer)
+#writer = animation.FFMpegWriter(fps=20)
+#im_ani.save('./videos/animation_video_deep_ga_15x15.mp4',writer=writer)
