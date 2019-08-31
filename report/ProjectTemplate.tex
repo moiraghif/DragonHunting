@@ -37,6 +37,10 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
+\usepackage{pifont}
+\usepackage{skull}
+\usepackage{wasysym}
+\usepackage{skak}
 
 \begin{document}
 
@@ -59,7 +63,7 @@
 %----------------------------------------------------------------------------------------
 
 \HRule \\[0.4cm]
-{ \huge \bfseries Title}\\[0.4cm] % Title of your document
+{ \huge \bfseries Methodological Approaches for Multi-agent RL games}\\[0.4cm] % Title of your document
 \HRule \\[1.5cm]
  
 %----------------------------------------------------------------------------------------
@@ -68,8 +72,9 @@
 
 \large
 \emph{Authors:}\\
-John Smith - XSFT901121- john.smith@email.com \\   % Your name
-John Doe - MTS4128991- john.doe@email.com   \\[1cm] % Your name
+Riccardo Cervero - 794126\\   % Your name
+Federico Moiraghi - 799735\\ % Your name
+Pranav Kasela - 846965\\[1cm] % Your name
 
 % If you don't want a supervisor, uncomment the two lines below and remove the section above
 %\Large \emph{Author:}\\
@@ -85,7 +90,7 @@ John Doe - MTS4128991- john.doe@email.com   \\[1cm] % Your name
 %	LOGO SECTION
 %----------------------------------------------------------------------------------------
 
-\includegraphics{figs/logo.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
+\includegraphics[width=0.2\textwidth]{logo.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
  
 %----------------------------------------------------------------------------------------
 
@@ -95,47 +100,93 @@ John Doe - MTS4128991- john.doe@email.com   \\[1cm] % Your name
 
 
 \begin{abstract}
-The ABSTRACT is not a part of the body of the report itself. Rather, the abstract is a brief summary of the report contents that is often separately circulated so potential readers can decide whether to read the report. The abstract should very concisely summarize the whole report: why it was written, what was discovered or developed, and what is claimed to be the significance of the effort. The abstract does not include figures or tables, and only the most significant numerical values or results should be given.
+
 \end{abstract}
 
+%The introduction should provide a clear statement of the problem posed by the project, and why the problem is of interest. It should reflect the scenario, if available. If needed, the introduction also needs to present background information so that the reader can understand the significance of the problem. A brief summary of the hypotheses and the approach your group used to solve the problem should be given, possibly also including a concise introduction to theory or concepts used later to analyze and to discuss the results.
+
+%Methodological Approach is the central and most important section of the report. Its objective must be to show, with linearity and clarity, the steps that have led to the definition of a decision model. The description of the working hypotheses, confirmed or denied, can be found in this section together with the description of the subsequent refining processes of the models. Comparisons between different models (e.g. heuristics vs. optimal models) in terms of quality of solutions, their explainability and execution times are welcome.
+%Do not attempt to describe all the code in the system, and do not include large pieces of code in this section, use pseudo-code where necessary. Complete source code should be provided separately (in Appendixes, as separated material or as a link to an on-line repo). Instead pick out and describe just the pieces of code which, for example: are especially critical to the operation of the system; you feel might be of particular interest to the reader for some reason; illustrate a non-standard or innovative way of implementing an algorithm, data structure, etc..You should also mention any unforeseen problems you encountered when implementing the system and how and to what extent you overcame them. Common problems are: difficulties involving existing software.
+
 \section{Introduction}
-The introduction should provide a clear statement of the problem posed by the project, and why the problem is of interest. It should reflect the scenario, if available. If needed, the introduction also needs to present background information so that the reader can understand the significance of the problem. A brief summary of the hypotheses and the approach your group used to solve the problem should be given, possibly also including a concise introduction to theory or concepts used later to analyze and to discuss the results.
+Reinforcement Learning is the branch of Machine Learning gathering several techniques designed to create a system, an agent, capable of learning the best way to achieve goals within an environment, whose elements - such as, for example, obstacles or objectives - can also vary over time. In other words, this agent simulate the process of human understanding, by exploring the initially unknown environment and consequently receiving rewards or penalization based on the goodness of the choices made.\\*
+In this study, we especially set ourselves the goals of:
+\begin{enumerate}
+  \item Using different methodologies to perform the same Reinforcement Learning experiment (Game 1);
+  \item Deepening the dynamics among multiple separate agent, each of which will learn automatically and independently how to win the game by looking and reacting to other agents' choices. In particular, the two dynamics of "competition" and "cooperation" between agents will be examined.
+\end{enumerate}
+To do so, four "worlds" have been built, with different rules and elements - such as fear or randomly moving obstacles -, within the agents will be trained over several epochs to maximize the reward, beat the rivals or help the allies in the best way possible.\\*
+The following sections will present games' and agents' characteristics. 
 
-
-\section{Datasets}
-In this section the available data sets must be presented. The term dataset refers to any type of information source, for example web services for geolocation fall into this category. 
-In addition, all necessary data manipulation processes, such as cleaning and enrichment with external sources, must be presented and discussed.
-
-\section{The Methodological Approach}
-
-This is the central and most important section of the report. Its objective must be to show, with linearity and clarity, the steps that have led to the definition of a decision model. The description of the working hypotheses, confirmed or denied, can be found in this section together with the description of the subsequent refining processes of the models. Comparisons between different models (e.g. heuristics vs. optimal models) in terms of quality of solutions, their explainability and execution times are welcome. 
-
-Do not attempt to describe all the code in the system, and do not include large pieces of code in this section, use pseudo-code where necessary. Complete source code should be provided separately (in Appendixes, as separated material or as a link to an on-line repo). Instead pick out and describe just the pieces of code which, for example:
+\section{Game 1: Dragon Hunting}
+This first experiment has been created with the aim of employing Q-Learning algorithm, Deep Q-Learning and Deep Q-Learning with the integration of Genetic Algorithm on a single system whose objective is beating a non-intelligent rival.\\*
+The environment the three agents will be trained within is defined as a class named "World" in the Python programming language, by which it is possible to create the elements they interacts with during the learning process. First of all, it is initialized a Numpy array with dimensione 15x15 as an empty grid, to which various elements are added, so as to compose the world the agent explore:
 \begin{itemize}
-\item are especially critical to the operation of the system;
-\item you feel might be of particular interest to the reader for some reason;
-\item  illustrate a non-standard or innovative way of implementing an algorithm, data
-structure, etc..
+  \item Obstacles, whose presence in the grid is denoted by the special character '\ding{122}', and which can be situated randomly - if no "entrance" location is specified-, or in a precise position over the epochs;
+  \item A treasure ($\symking$), which can be located in a randomly chosen coordinate or predefined too. It can not be moved, but only caught by the agent;
+  \item A dragon ($\skull$), which is the non-intelligent enemy of the agent. It can be spawn randomly, or, in case the position of treasure was preselected, situated close to it, in order to make the game more difficult. In this experiment, the dragon is not capable to learn any strategy to win the game over the epochs or react to agent's moves, but it merely moves randomly through the grid following the four directions 'up', 'down', 'right', 'left';
+  \item \textit{Bilbo} ($\smiley$), the agent to be trained, which is always generated at a random position. Unlike the other components, Bilbo moves around the world trying to maximize the total reward of his game and avoid penalties in best way possible, which is the core operating principle of any Reinforcement Learning methodology.
 \end{itemize}
+The creation of these components is carried out by the function \textit{"random\_spawn"} at locations where there are no obstacles or other characters, so that the grid remains consistent, while the function \textit{"is\_border"} checks whether a cell at a given coordinate is borderline.\\*
+Therefore, Bilbo's goal is to reach the cell where the treasure is without getting caught by the dragon, condition that occurs when the two end up in the same cell. The game ends when Bilbo is killed by the dragon in the terms just described, or when he manages to get the treasure, escaping from the enemy among the obstacles scattered around the world. In the meanwhile, another function returns the reward based on every game state:
+\begin{itemize}
+%Sarebbe bello spiegare perchè avete scelto proprio questi valori:
+  \item If the treasure has been caught by Bilbo, he gets a positive reward of 10;
+  \item If Bilbo has been killed by the dragon, he gets a penalty of -5;
+  \item At each moves, Bilbo receives a penalty of -1. This negative reward serves to incentivize Bilbo to find shorter routes to reach the treasure;
+  \item If Bilbo dumps into an obstacle, so his position remains the same, he gets a penalty of -1, so that he learns to avoid them.
+\end{itemize}
+Reward values can be a negative constant or 0, but in order to obtain a faster convergence, it's better to give the agent a positive reward when he gets near the objective.\\*
+Another Python class named "Agent" serves to set the main characteristics of Bilbo:
+\begin{itemize}
+  \item He can move in the same four direction of the dragon - 'up', 'down', 'right', 'left';
+  \item He is affected by a "fear" factor, in order to simulate an aspect of real human exploring process. This is produced by a function which returns a value based on the distance from the dragon: if Bilbo is far from it, the "fear" value is close to 1; otherwise, as the distance from the dragon decrease, the value increases at most to 2. This measure is calculated as follows: 
+  $$\frac{d}{1+d}$$
+  with d representing the Euclidean distance between the dragon's position (D) and Bilbo's location (B):
+  $$d=\sqrt{(D_{x}-B_{x})^2+(D_{y}-B_{y})^2}$$
+  This will consist in a divisor of the $\epsilon$ parameter used in Reinforcement Learning algorithms to produce random moves in the grid and allow a better exploration of the world. As one can see from the formulation, this factor is a normalized distance, used to prevent $\epsilon$ to be too much affected by it.\\*
+  In conclusion, in this way, when Bilbo approaches the dragon, his fear level increases and the chance of a random exploration as well.
+\end{itemize}
+Given this general aspects of Game 1, three methodologies have been exploited to provide the agent with a learning process, each based on an agent generalization provided by a new Python class.
 
-You should also mention any unforeseen problems you encountered when implementing the
-system and how and to what extent you overcame them. Common problems are:
- difficulties involving existing software.
+\subsection{Q-Learning algorithm}
+The first approach consists in Q-Learning algorithm, which is based on the propagation of potential reward from the best possible actions in future states. Following this idea, each action in each state is related to a Q value, updated when new relevant informations about the environment, derived from exploration, are made available. The Q-Learning algorithm utilizes the following updating rule:
+$$Q(s,a)=Q(s,a)+\alpha(r+\gamma\;max\;Q(s',a') - Q(s,a))$$
+with $Q(s,a)$ Q value of current state and $Q(s',a')$ Q value of next state; $r$ the reward obtained by taking action $a$ at the state $s$; $\gamma$ discounting factor regulating the impact of future rewards; $\alpha$ learning rate. Hence, the worth of an action in a certain state also depends on the discounted worth produced by the best action in the next state $s'$, and on the extent of the steps to the convergence we selected with parameter $alpha$. In other words, this policy makes agent estimate the goodness of an action in a certain state based on the cascaded, discounted reward from the next states. In this way, at state $s$, Bilbo won't choose the action providing the best rewards only in the current state, but the action which leads to the best total rewards over all the states, while exploring the world in order to discover the rewards or penalties of all action. As Q-values are updated, they are stored in a Q matrix, so that Bilbo can learn from past experiences. This exploration process, that consists merely in random moves around the "gridworld", is fostered by $\epsilon$ parameter, which depends on "fear factor" as aforementioned. More over, $\epsilon$ decays by being multiplied to a "decay factor" at each step, up to a minimum of 0.01.\\*
+In conclusion, this process can be explained as follows: if a number extracted from a uniform between 0 and 1 is less than $\epsilon$ or the Q values of all possible actions in the current state are null, the system performs a random step. Otherwise, it performs the action related to the maximum Q value in that state.\\*
+The values set for hyperparameters are the following:
+%Sarebbe bello spiegare perchè avete scelto proprio questi valori, anche qui:
+\begin{itemize}
+  \item $\alpha$ = 0.5
+  \item $\gamma$ = 0.8
+  \item $\epsilon$ = 0.2
+  \item $decay\;factor$ = 0.99
+\end{itemize} 
+Then, the limits of epochs and episodes executable are both set to 1000.\\*
+During the iterations, the performances of Bilbo are tracked by counting the number of wins, cases where he manages to stay alive and get the treasure, and losses, when he ends up killed by the dragon.
+%Qui ci vanno i risultati
 
+\subsection{Deep Q-Learning approach}
+
+
+\subsection{Genetic Algorithm applied to Deep Q-Learning algorithm}
+
+\section{Game 2: Competition between two agents}
+
+
+\section{Game 3: Competition among five agents}
+
+\section{Game 4: Multi-agent Cooperation}
 
 \section{Results and Evaluation}
-The Results section is dedicated to presenting the actual results (i.e. measured and calculated quantities), not to discussing their meaning or interpretation. The results should be summarized using appropriate Tables and Figures (graphs or schematics). Every Figure and Table should have a legend that describes concisely what is contained or shown. Figure legends go below the figure, table legends above the table. Throughout the report, but especially in this section, pay attention to reporting numbers with an appropriate number of significant figures. 
+Descrizione dei risultati, performance, immagini.
 
 \section{Discussion}
-The discussion section aims at interpreting the results in light of the project's objectives. The most important goal of this section is to interpret the results so that the reader is informed of the insight or answers that the results provide. This section should also present an evaluation of the particular approach taken by the group. For example: Based on the results, how could the experimental procedure be improved? What additional, future work may be warranted? What recommendations can be drawn?
+Deep Learning per il problema multi-agente ed altre possibili migliorie.
 
 
 \section{Conclusions}
-Conclusions should summarize the central points made in the Discussion section, reinforcing for the reader the value and implications of the work. If the results were not definitive, specific future work that may be needed can be (briefly) described. The conclusions should never contain ``surprises''. Therefore, any conclusions should be based on observations and data already discussed. It is considered extremely bad form to introduce new data in the conclusions.
-
-\section*{References}
-
-The references section should contain complete citations following standard form.  The references should be numbered and listed in the order they were cited in the body of the report. In the text of the report, a particular reference can be cited by using a numerical number in brackets as \cite{Lee2015} that corresponds to its number in the reference list. \LaTeX provides several styles to format the references
+%Conclusions should summarize the central points made in the Discussion section, reinforcing for the reader the value and implications of the work. If the results were not definitive, specific future work that may be needed can be (briefly) described. The conclusions should never contain ``surprises''. Therefore, any conclusions should be based on observations and data already discussed. It is considered extremely bad form to introduce new data in the conclusions.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references.bib}
