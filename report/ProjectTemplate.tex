@@ -171,7 +171,7 @@ The input of this neural network, implemented within Q-learning algorithm, is no
 \end{enumerate}
 After this transformation, the current state that will form the input of the neural network will appear as an array containing the two distances and the aforementioned binary values. For example, if Bilbo were on the leftmost edge of the gridworld, the input neurons would receive the following elements:
 $$
-\{B_{(x,y)}-T_{(x,y)},\;B_{(x,y)}-T_{(x,y)},\;0,\;0,\;0,\;1\}
+\{B_{(x,y)}-T_{(x,y)},\;B_{(x,y)}-D_{(x,y)},\;0,\;0,\;0,\;1\}
 $$
 The output are the Q values for each action in the given state, which will approach the results produced by the learning update previously utilized. Therefore, using the mean-squared error metrics, the loss or cost function for the neural network will be:
 $$(r+\gamma\;max_{a'}\;Q'(s',a')-Q(s,a))^2$$
