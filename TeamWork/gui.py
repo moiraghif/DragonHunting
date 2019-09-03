@@ -104,8 +104,10 @@ class GUI:
                         self.draw.create_image((*pos),
                                                anchor=tk.NW,
                                                image=self.rip)
+                        self.save_png()
                     continue
                 if game_ended:
+                    self.save_png()
                     break
                 pos = self.world.players[p]
                 healts0 = {p: p.healt for p in self.world.players.keys()}
