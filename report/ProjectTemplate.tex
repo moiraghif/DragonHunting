@@ -31,7 +31,7 @@
 %	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass[12pt]{article}
+\documentclass[12pt,twocolumn]{article}
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
 \usepackage{amsmath}
@@ -63,7 +63,7 @@
 %----------------------------------------------------------------------------------------
 
 \HRule \\[0.4cm]
-{ \huge \bfseries Methodological Approaches for Multi-agent RL games}\\[0.4cm] % Title of your document
+{ \huge \bfseries Methodological approaches for Multi-agent RL games}\\[0.4cm] % Title of your document
 \HRule \\[1.5cm]
  
 %----------------------------------------------------------------------------------------
@@ -72,26 +72,20 @@
 
 \large
 \emph{Authors:}\\
-Riccardo Cervero - 794126\\   % Your name
-Federico Moiraghi - 799735\\ % Your name
-Pranav Kasela - 846965\\[1cm] % Your name
-
-% If you don't want a supervisor, uncomment the two lines below and remove the section above
-%\Large \emph{Author:}\\
-%John \textsc{Smith}\\[3cm] % Your name
-
+Riccardo Cervero - 794126\\   
+Federico Moiraghi - 799735\\ 
+Pranav Kasela - 846965\\[1cm] 
 %----------------------------------------------------------------------------------------
 %	DATE SECTION
 %----------------------------------------------------------------------------------------
 
-{\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+{\large \today}\\[2cm] 
 
 %----------------------------------------------------------------------------------------
 %	LOGO SECTION
 %----------------------------------------------------------------------------------------
 
-\includegraphics[width=0.2\textwidth]{logo.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
- 
+\includegraphics[width=0.2\textwidth]{logo.png}\\[1cm] 
 %----------------------------------------------------------------------------------------
 
 \vfill % Fill the rest of the page with whitespace
@@ -102,11 +96,14 @@ Pranav Kasela - 846965\\[1cm] % Your name
 \begin{abstract}
 
 \end{abstract}
+\tableofcontents
+
 
 %The introduction should provide a clear statement of the problem posed by the project, and why the problem is of interest. It should reflect the scenario, if available. If needed, the introduction also needs to present background information so that the reader can understand the significance of the problem. A brief summary of the hypotheses and the approach your group used to solve the problem should be given, possibly also including a concise introduction to theory or concepts used later to analyze and to discuss the results.
 
 %Methodological Approach is the central and most important section of the report. Its objective must be to show, with linearity and clarity, the steps that have led to the definition of a decision model. The description of the working hypotheses, confirmed or denied, can be found in this section together with the description of the subsequent refining processes of the models. Comparisons between different models (e.g. heuristics vs. optimal models) in terms of quality of solutions, their explainability and execution times are welcome.
 %Do not attempt to describe all the code in the system, and do not include large pieces of code in this section, use pseudo-code where necessary. Complete source code should be provided separately (in Appendixes, as separated material or as a link to an on-line repo). Instead pick out and describe just the pieces of code which, for example: are especially critical to the operation of the system; you feel might be of particular interest to the reader for some reason; illustrate a non-standard or innovative way of implementing an algorithm, data structure, etc..You should also mention any unforeseen problems you encountered when implementing the system and how and to what extent you overcame them. Common problems are: difficulties involving existing software.
+
 
 \section{Introduction}
 Reinforcement Learning is the branch of Machine Learning gathering several techniques designed to create a system, an agent, capable of learning the best way to achieve goals within an environment, whose elements - such as, for example, obstacles or objectives - can also vary over time. In other words, this agent simulate the process of human understanding, by exploring the initially unknown environment and consequently receiving rewards or penalization based on the goodness of the choices made.\\*
@@ -117,8 +114,9 @@ In this study, we especially set ourselves the goals of:
 \end{enumerate}
 To do so, four "worlds" have been built, with different rules and elements - such as fear or randomly moving obstacles -, within the agents will be trained over several epochs to maximize the reward, beat the rivals or help the allies in the best way possible.\\*
 The following sections will present games' and agents' characteristics. 
+\newpage
 
-\section{Game 1: Dragon Hunting}
+\section{Game 1: Bilbo and the dragon}
 This first experiment has been created with the aim of employing Q-Learning algorithm, Deep Q-Learning and Deep Q-Learning with the integration of Genetic Algorithm on a single system whose objective is beating a non-intelligent rival.\\*
 The environment the three agents will be trained within is defined as a class named "World" in the Python programming language, by which it is possible to create the elements they interacts with during the learning process. First of all, it is initialized a Numpy array with dimensione 15x15 as an empty grid, to which various elements are added, so as to compose the world the agent explore:
 \begin{itemize}
@@ -150,42 +148,86 @@ Another Python class named "Agent" serves to set the main characteristics of Bil
 Given this general aspects of Game 1, three methodologies have been exploited to provide the agent with a learning process, each based on an agent generalization provided by a new Python class.
 
 \subsection{Q-Learning algorithm}
-The first approach consists in Q-Learning algorithm, which is based on the propagation of potential reward from the best possible actions in future states. Following this idea, each action in each state is related to a Q value, updated when new relevant informations about the environment, derived from exploration, are made available. The Q-Learning algorithm utilizes the following updating rule:
+The first approach consists in Q-Learning algorithm, which is based on the propagation of potential reward from the best possible actions in future states. Following this idea, each action in each state is related to a Q value, updated when new relevant information about the environment, derived from exploration, is made available. The Q-Learning algorithm utilizes the following updating rule:
 $$Q(s,a)=Q(s,a)+\alpha(r+\gamma\;max\;Q(s',a') - Q(s,a))$$
 with $Q(s,a)$ Q value of current state and $Q(s',a')$ Q value of next state; $r$ the reward obtained by taking action $a$ at the state $s$; $\gamma$ discounting factor regulating the impact of future rewards; $\alpha$ learning rate. Hence, the worth of an action in a certain state also depends on the discounted worth produced by the best action in the next state $s'$, and on the extent of the steps to the convergence we selected with parameter $alpha$. In other words, this policy makes agent estimate the goodness of an action in a certain state based on the cascaded, discounted reward from the next states. In this way, at state $s$, Bilbo won't choose the action providing the best rewards only in the current state, but the action which leads to the best total rewards over all the states, while exploring the world in order to discover the rewards or penalties of all action. As Q-values are updated, they are stored in a Q matrix, so that Bilbo can learn from past experiences. This exploration process, that consists merely in random moves around the "gridworld", is fostered by $\epsilon$ parameter, which depends on "fear factor" as aforementioned. More over, $\epsilon$ decays by being multiplied to a "decay factor" at each step, up to a minimum of 0.01.\\*
 In conclusion, this process can be explained as follows: if a number extracted from a uniform between 0 and 1 is less than $\epsilon$ or the Q values of all possible actions in the current state are null, the system performs a random step. Otherwise, it performs the action related to the maximum Q value in that state.\\*
 The values set for hyperparameters are the following:
 %Sarebbe bello spiegare perchè avete scelto proprio questi valori, anche qui:
 \begin{itemize}
-  \item $\alpha$ = 0.5
-  \item $\gamma$ = 0.8
+  \item $\alpha$ = 0.5, so that Bilbo's "patience level" is perfectly balanced
+  \item $\gamma$ = 0.8, making Bilbo a fairly far-sighted agent 
   \item $\epsilon$ = 0.2
-  \item $decay\;factor$ = 0.99
+  \item $decay\;factor$ = 0.99, yielding a slow decay
 \end{itemize} 
 Then, the limits of epochs and episodes executable are both set to 1000.\\*
 During the iterations, the performances of Bilbo are tracked by counting the number of wins, cases where he manages to stay alive and get the treasure, and losses, when he ends up killed by the dragon.
 %Qui ci vanno i risultati
 
 \subsection{Deep Q-Learning approach}
-
+In the previous methodology, Q-Learning algorithm, the experience acquired by Bilbo during the games was based on explicit tables, - Q matrix and reward matrix - holding the information discovered, so that he could memorize which actions to choose in any given state. This tables could end up to be far too large and unwieldy when the game is composed of a large number of states and potential actions, or the world becomes larger. Similarly, still maintaining a medium or small gridworld, this mechanism leads to a loss of efficiency in the learning process, slowing down the progress of the system - namely the algorithm - which constitutes the agent.\\*
+The solution to this problem can be the application of a Deep Reinforcement Learning methodology, which consists in training a neural network to predict Q values for each action in a certain state, instead of having explicit tables.\\*
+The input of this neural network, implemented within Q-learning algorithm, is not only the simple set of coordinate describing the location of the agent itself and of the dragon, which is the current state, but a more general from, this way the model will be able to generalize to different scenarios:
+\begin{enumerate}
+  \item computing the distance between Bilbo and the treasure and between Bilbo and the dragon by subtracting respective coordinates;
+  \item checking whether the position of Bilbo is at the boarder  for all four sides - ordered as "up", "down", "right", "left" - and assigning 0 if the given direction is accessible or 1 if it is borderline.
+\end{enumerate}
+After this transformation, the current state that will form the input of the neural network will appear as an array containing the two distances and the aforementioned binary values. For example, if Bilbo were on the leftmost edge of the gridworld, the input neurons would receive the following elements:
+$$
+\{B_{(x,y)}-T_{(x,y)},\;B_{(x,y)}-T_{(x,y)},\;0,\;0,\;0,\;1\}
+$$
+The output are the Q values for each action in the given state, which will approach the results produced by the learning update previously utilized. Therefore, using the mean-squared error metrics, the loss or cost function for the neural network will be:
+$$(r+\gamma\;max_{a'}\;Q'(s',a')-Q(s,a))^2$$
+Starting from this, the neural network is built as a sequential model composed by:
+\begin{itemize}
+  \item the input layer, receiving the reshaped current state, namely the information about the current distance from the other entities and with respect to the border
+  \item a hidden layer composed by 16 neurons activated by a Rectified Linear Unit (ReLU) function; 
+  \item the linear activated output layer with one neuron for each possible action in the given state, which hence performs the linear summation of the inputs and the weights, with no additional function applied, providing the estimated Q values.
+\end{itemize}
+The model is compiled using the aforementioned mean-squared error loss function and the Adaptive Moment Estimation as optimizer.\\*
+As Bilbo explores the world, his experience is described into 5 values: current and next state, game state, reward and action performed. Since, among all the moves performed, the probability that one of them leads to Bilbo's victory - attainment the treasure - or to his defeat - capture by the dragon - is very low, two separate memories are established: one containing the unlikely events just defined, the other storing the rewards obtained in the normal phases of the game. Therefore, when the system has developed sufficient experience in the world, in order to calculate the exact Q-values for each action in the given state, at each epoch the model is trained on a \textit{mini-batch} consisting of the union of 16 elements randomly extracted respectively from both separate memories. While the system performs these steps, it simultaneously updates the Q-values. Finally, this process is exploited within the previously used Q-Learning algorithm, extending the classic updating rule and resulting in a highly efficient Deep Reinforcement Learning methodology.\\*
+As before, performances, computed by the number of win and losses, are tracked over the 20000 episodes, which involve at most 150 epochs.\\*
+The hyperparameters are set as follows:
+\begin{itemize}
+  \item $\gamma$ = 0.8, maintaining the same Bilbo's "foresight" as before
+  \item $\epsilon$ = 0.5, increasing the fixed component of random exploration probability with respect to the previous section
+  \item $decay\;factor$ = 0.9998, further slowing the decay
+\end{itemize} 
+%Risultati
 
 \subsection{Genetic Algorithm applied to Deep Q-Learning algorithm}
+An issue that needs to be further investigated to achieve accurate estimation performances through a neural network is the tuning of learning parameters involved in the training process. In the previous section, the optimization technique used for updating the weights of the sequential model was the Adaptive Moment Estimation. This one consists in an extension of Stochastic gradient descent method (SGD), considered as standard \textit{de facto} for training artificial neural networks. However, despite its properties, it can be replaced by other methodologies, including the class of metaheuristics called evolutionary algorithms (EA). The main difference between SGD and EA lies in the fact that the second ones are well suited for multi-criteria optimization, when gradient descent is dedicated to mono-criteria optimization.\\*
+A solution part of the EA class is represented by the Genetic Algorithm, which simulates the evolution of an initial population towards the best possible solution, the typical mechanism of the natural selection. During this process, each candidate solution present in the initial population of randomly generated individuals has a set of properties, chromosomes or genotype, which can be mutated and altered. 
+Therefore, in this third subsection, Genetic Algorithm will be presented as an alternative, search-based, optimization method for learning weights within the Deep Reinforcement Learning system.\\*
+The operation mode of this third algorithm is completely identical to the previous one, except for the use of GA within the neural network training process. In details, the weights optimization process takes place as follows: the system initializes 100 random sets of weights, Bilbo's learning parameters, and evaluates the fitness of every individual within each generation - actually the value of the objective function in the optimization problem being solved, hence trying to minimize the mean-squared error function for Q-values -, returning the individuals sorted according to their score. From them, it extracts the first 10 - elitism parameter -, which will be used as parents of next generation. Indeed, each new individual will be created with a crossover function which randomly chooses among the genes of two parents, considered as "father" and "mother". After eventually undergoing a random mutation process - the multiplication of genotypes, hence the value of each weight, by a random number between -2 and 2 - , with a probability set equal to 5\%, these "children" are in turn used to produce a new generation. When 300 generations have been produced - iterations stopping criterion -, the algorithm obtains a certain solution for the weights values, which are passed to the NN by the function called \textit{set\_weights}. 
+%Risultati
 
-\section{Game 2: Competition between two agents}
+\section{Multi-agent Competition}
+As mentioned above, the second objective is the study of competition dynamics between independent agents. This in-depth analysis is the result of two games characterized by a different complexity from the conceptual and technical point of view. Therefore two new worlds are built, and agents competing within them will be based on a Q-Learning algorithm, without any Deep Reinforcement Learning generalization or alternative optimization methods, so as not to further increase the intricacy distinguishing these experiments.
+\subsection{Game 2: Duel between two agents}
+In Game 2, two players learn how to avoid fixed walls scattered in the grid and how to choose the best moment and way to approach and attack the opponent, in a duel where only one winner is allowed. Similarly to the definition of Bilbo's world, another Python class acts as a constructor for the elements of the game: the two rivals, whose locations are randomly initialized - by checking these starting positions to exist and be accessible -, and the obstacles randomly situated as well. Two functions, consequently recalled within the "Agent" class, perform the only two alternative actions allowed to the agents: one for execute a movement towards the opponent, one for carry out an attack. The second one can be carried out at any time of the game, equally to the action of the movement, but it is able to inflict damage only when rival's position is close enough. When one of them is get hit, he suffers a reduction in his so-called "health" parameter, which is initially set at 10 points. In details, the basic dynamics of the game can be summarized into the following rules:
+\begin{itemize}
+  \item If a player carries out an attack at a distance that is not null and less than 1 in absolute value, makes sure that the health score of the other agent decreases by one point and this opponent receives a negative reward of -1
+  \item If after 500 epochs, when the game ends, the rival's health score is higher than 0, then the player receives a 10 point penalty.
+\end{itemize}
+In this way, the agent is encouraged to approach and attack as soon as the distance becomes short enough, despite the fact that he himself could be injured, since the signal received if the other had residual health at the end of the game is much more negative with respect to the penalty received at each stroke suffered. Therefore, after having explored the world and developed sufficient experience in the various episodes, the two players will tend to face each other, without "fearing" the clash. If, on the other hand, the penalty in case of damage suffered was higher, the two agents could have preferred the escape, that is they would have limited themselves to move away from the opponent and maintain the distance between them beyond the unit in absolute value.\\*
+The operation mode is similar to the normal Q-learning algorithm, exception made for the way the two agents learn how to win the game: while Bilbo was limited to acquiring the right way to avoid an element that performed random movements, the dragon, and reach the treasure, in this experiment the duelists will be forced to react to the opponent's moves and choose the right moment to attack. In details, these dynamics are made possible by the function \textit{get\_action} within the "Agent" class:  at each step, if a number randomly extracted from a uniform variable is less than $\epsilon$ hyperparameter, one system performs a random moves among the five possibilities, that are moving in one of the four walkable direction - "up", "down", "right", "left" - or attack; otherwise, it chooses the action maximizing the Q-value by looking at the Q-matrix entries in correspondence with current state, which is composed of its position and the opponent's coordinates. Then, it gets the two new locations, checks the game state, receives the rewards. Finally, it computes the new Q-value for the next state - with the same updating rule explained in the section 2.1 - and stores it in the Q-matrix. These phases are iterated, as said previously, over 500 epochs.\\*
+The game will be repeated 100,000 times. The hyperparameters of both duellists are set as follows:
+\begin{itemize}
+  \item $\gamma$ = 0.9, making the agent more "concerned" about next moves, hence more reactive to the opponent's strategy
+  \item $\alpha$ = 0.75, improving the learning rate, thus the pace at which it acquires new information
+  \item $\epsilon$ = 0.05, setting the probability of a random exploration up to 5\%.
+\end{itemize} 
+%Risultati
+\subsection{Game 3: Battle among five agents}
 
+%Risultati
 
-\section{Game 3: Competition among five agents}
-
-\section{Game 4: Multi-agent Cooperation}
-
-\section{Results and Evaluation}
-Descrizione dei risultati, performance, immagini.
-
-\section{Discussion}
-Deep Learning per il problema multi-agente ed altre possibili migliorie.
-
+\section{Multi-agent Cooperation}
+%Risultati
 
 \section{Conclusions}
+Deep Learning per il problema multi-agente ed altre possibili migliorie.
 %Conclusions should summarize the central points made in the Discussion section, reinforcing for the reader the value and implications of the work. If the results were not definitive, specific future work that may be needed can be (briefly) described. The conclusions should never contain ``surprises''. Therefore, any conclusions should be based on observations and data already discussed. It is considered extremely bad form to introduce new data in the conclusions.
 
 \bibliographystyle{IEEEtran}

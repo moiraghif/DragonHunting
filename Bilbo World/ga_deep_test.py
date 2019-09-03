@@ -24,16 +24,16 @@ win = 0
 lost = 0
 nothingness = 0
 tot_reward = 0
-fig = plt.figure(figsize=(20,20))
+fig = plt.figure(figsize=(20, 20))
 for ep in range(TOT_EPISODES):
-    anim =[]
+    anim = []
 
-    mondo=World(WORLD_DIM, bilbo=None, obstacle=False, random_spawn=True)
+    mondo = World(WORLD_DIM, bilbo=None, obstacle=False, random_spawn=True)
     mondo.set_bilbo(bilbo)
     #do deep Q-stuff
-    game_ended=False
+    game_ended = False
     epoch = 0
-    current_state=bilbo.get_state()
+    current_state = bilbo.get_state()
     env = mondo.create_env(d)
 
     anim.append((plt.pcolormesh(env, cmap='CMRmap'),))
@@ -45,8 +45,8 @@ for ep in range(TOT_EPISODES):
         bilbo.move(inverse_possible_moves[action])()
         new_state = bilbo.get_state()
         reward = bilbo.reward(current_state, new_state)
-
-        tot_reward += reward
+        if not reward in [-2, 1]:
+            tot_reward += reward
         game_ended = bilbo.game_ended()
         current_state = new_state
 
@@ -66,7 +66,7 @@ im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
 ax = plt.gca()
 plt.axis('off')
 
-plt.show()
-
 writer = animation.FFMpegWriter(fps=20)
-im_ani.save('./videos/animation_video_deep_ga_15x15.mp4',writer=writer)
+im_ani.save('./videos/animation_video_deep_ga_15x15.mp4', writer=writer)
+
+plt.show()
