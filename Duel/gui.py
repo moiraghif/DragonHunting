@@ -28,9 +28,24 @@ class GUI:
         self.blood_pic = self.load_image("blood.png")
         self.rip_pic = self.load_image("rip.png")
         self.players = dict()
+        self.image_names = self.rename_file()
         self.refresh()
         threading.Thread(target=self.start).start()
         self.root.mainloop()
+
+    def rename_file(self, basename=""):
+        n = 0
+        def set_names():
+            nonlocal n, basename
+            n += 1
+            name = basename + str(n)
+            return name + ".eps", name + ".png"
+        return set_names
+        
+    def save_png(self):
+        file_eps, file_png = self.image_names()
+        self.draw.postscript(file=file_eps)
+        Image.open(file_eps).save(file_png, "png")
 
     def load_image(self, image):
         "return the image of the right size"
@@ -70,7 +85,8 @@ class GUI:
                        delta[0] * self.size)
 
     def start(self, iterations=10000):
-        TIME = 0.1
+        TIME = 0
+        self.save_png()
         for epoch in range(iterations):
             for p in self.world.players.keys():
                 pos = self.world.players[p]
@@ -85,14 +101,18 @@ class GUI:
                     self.draw.create_image((*pos),
                                            anchor=tk.NW,
                                            image=self.rip_pic)
+                    self.save_png()
                     return
                 if delta_healt != 0:
                     other_pos = (self.size * self.world.players[other])[::-1]
                     blood = self.draw.create_image((*other_pos),
                                                    anchor=tk.NW,
                                                    image=self.blood_pic)
+                    self.save_png()
                     time.sleep(TIME)
                     self.draw.delete(blood)
+                    self.save_png()
                 elif any(delta != 0):
                     self.move_agent(p, delta)
                     time.sleep(TIME)
+                    self.save_png()

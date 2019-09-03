@@ -30,9 +30,26 @@ class GUI:
         self.blood = self.load_image("blood.png")
         self.rip = self.load_image("rip.png")
         self.players = dict()
+        self.image_names = self.rename_file()
         self.refresh()
         threading.Thread(target=self.start).start()
         self.root.mainloop()
+
+    def rename_file(self, basename=""):
+        n = 0
+        digits = 3
+        def set_names():
+            nonlocal n, basename, digits
+            n += 1
+            n_str = "0" * (digits - len(str(n))) + str(n)
+            name = basename + n_str
+            return name + ".eps", name + ".png"
+        return set_names
+
+    def save_png(self):
+        file_eps, file_png = self.image_names()
+        self.draw.postscript(file=file_eps)
+        Image.open(file_eps).save(file_png, "png")
 
     def load_image(self, image):
         "return the image of the right size"
@@ -72,7 +89,8 @@ class GUI:
                        delta[0] * self.size)
 
     def start(self, iterations=10000):
-        TIME = 0.1
+        self.save_png()
+        TIME = 0.0
         alive = {p: True for p in self.world.players.keys()}
         for epoch in range(iterations):
             for p in alive.keys():
@@ -98,11 +116,13 @@ class GUI:
                             blood = self.draw.create_image((*o_pos[::-1]),
                                                            anchor=tk.NW,
                                                            image=self.blood)
+                            self.save_png()
                             time.sleep(TIME)
                             self.draw.delete(blood)
                 else:
                     self.move_agent(p, delta_pos)
                     time.sleep(TIME)
+                self.save_png()
             what_to_print = ""
             for p in self.world.players.keys():
                 health = '0'+str(p.healt) if p.healt < 10 else str(p.healt)
