@@ -167,7 +167,7 @@ During the iterations, the performances of Bilbo are tracked by counting the num
 \subsection{Deep Q-Learning approach}
 In the previous methodology, Q-Learning algorithm, the experience acquired by Bilbo during the games was based on explicit tables, - Q matrix and reward matrix - holding the information discovered, so that he could memorize which actions to choose in any given state. This tables could end up to be far too large and unwieldy when the game is composed of a large number of states and potential actions, or the world becomes larger. Similarly, still maintaining a medium or small gridworld, this mechanism leads to a loss of efficiency in the learning process, slowing down the progress of the system - namely the algorithm - which constitutes the agent.\\*
 The solution to this problem can be the application of a Deep Reinforcement Learning methodology, which consists in training a neural network to predict Q values for each action in a certain state, instead of having explicit tables.\\*
-The input of this neural network, implemented within Q-learning algorithm, is not only the simple set of coordinate describing the location of the agent itself and of the dragon, which is the current state, but a reshaped form of it, created through the function \textit{deep\_normalized\_state}. This one provides the input "image" for the Deep Q-Learning algorithm by:
+The input of this neural network, implemented within Q-learning algorithm, is not only the simple set of coordinate describing the location of the agent itself and of the dragon, which is the current state, but a more general from, this way the model will be able to generalize to different scenarios:
 \begin{enumerate}
   \item computing the distance between Bilbo and the treasure and between Bilbo and the dragon by subtracting respective coordinates;
   \item checking whether the position of Bilbo is at the boarder  for all four sides - ordered as "up", "down", "right", "left" - and assigning 0 if the given direction is accessible or 1 if it is borderline.
@@ -180,18 +180,18 @@ The output are the Q values for each action in the given state, which will appro
 $$(r+\gamma\;max_{a'}\;Q'(s',a')-Q(s,a))^2$$
 Starting from this, the neural network is built as a sequential model composed by:
 \begin{itemize}
-  \item the input layer, activated by a Rectified Linear Unit (ReLU) function, receiving the reshaped current state, namely the information about the current distance from the other entities and with respect to the border; 
-  \item an hidden layer composed by 8 neurons activated by a ReLU function too;
+  \item the input layer, receiving the reshaped current state, namely the information about the current distance from the other entities and with respect to the border
+  \item a hidden layer composed by 16 neurons activated by a Rectified Linear Unit (ReLU) function; 
   \item the linear activated output layer with one neuron for each possible action in the given state, which hence performs the linear summation of the inputs and the weights, with no additional function applied, providing the estimated Q values.
 \end{itemize}
 The model is compiled using the aforementioned mean-squared error loss function and the Adaptive Moment Estimation as optimizer.\\*
 As Bilbo explores the world, his experience is described into 5 values: current and next state, game state, reward and action performed. Since, among all the moves performed, the probability that one of them leads to Bilbo's victory - attainment the treasure - or to his defeat - capture by the dragon - is very low, two separate memories are established: one containing the unlikely events just defined, the other storing the rewards obtained in the normal phases of the game. Therefore, when the system has developed sufficient experience in the world, in order to calculate the exact Q-values for each action in the given state, at each epoch the model is trained on a \textit{mini-batch} consisting of the union of 16 elements randomly extracted respectively from both separate memories. While the system performs these steps, it simultaneously updates the Q-values. Finally, this process is exploited within the previously used Q-Learning algorithm, extending the classic updating rule and resulting in a highly efficient Deep Reinforcement Learning methodology.\\*
-As before, performances, computed by the number of win and losses, are tracked over the 20000 episodes, which involve at most 500 epochs.\\*
+As before, performances, computed by the number of win and losses, are tracked over the 20000 episodes, which involve at most 150 epochs.\\*
 The hyperparameters are set as follows:
 \begin{itemize}
   \item $\gamma$ = 0.8, maintaining the same Bilbo's "foresight" as before
   \item $\epsilon$ = 0.5, increasing the fixed component of random exploration probability with respect to the previous section
-  \item $decay\;factor$ = 0.9999, further slowing the decay
+  \item $decay\;factor$ = 0.9998, further slowing the decay
 \end{itemize} 
 %Risultati
 
