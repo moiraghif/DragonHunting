@@ -139,7 +139,7 @@ def cumsum_sma(array, period):
 #plot for Reward
 fig = plt.figure(figsize=(15, 15))
 reward, = plt.plot(rewards)
-ra_reward, = plt.plot(cumsum_sma(rewards, 10),  linewidth=5)
+ra_reward, = plt.plot(cumsum_sma(rewards, 10), linewidth=5)
 plt.legend([reward, ra_reward], ['Reward', 'Cumulative Average'], loc=5, prop={'size': 20})
 plt.xlabel('Episode', fontsize=40)
 plt.ylabel('Reward', fontsize=40)

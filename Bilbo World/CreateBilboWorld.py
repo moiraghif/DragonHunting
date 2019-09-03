@@ -105,7 +105,7 @@ class World:
         if not moving_reward: #for q learning
             return -WALKING_PENALTY
 
-        if (current_state==next_state).all():
+        if (current_state == next_state).all():
             return -OBSTACLE_PENALTY
         treasure_pos = np.array(self.get_position(TREASURE_CHAR))
         #reward can either return a negative constant (-1) or 0, but to have a faster
@@ -114,8 +114,8 @@ class World:
         player_old_pos = current_state[0:2]
         player_new_pos = next_state[0:2]
         if np.sum(np.abs(player_old_pos - treasure_pos)) <= np.sum(np.abs(player_new_pos - treasure_pos)):
-            return 0
-        return 0 #if closing in to the treasure
+            return -2
+        return 1 #if closing in to the treasure
 
 
     def is_border(self, pos):

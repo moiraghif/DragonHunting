@@ -13,7 +13,7 @@ PLAYER_CHAR = '☺'
 OBSTACLE_CHAR = "█"
 
 MAX_MEMORY = 5000
-MIN_MEMORY = 16
+MIN_MEMORY = 32
 
 
 
@@ -192,7 +192,7 @@ class DeepQLearningAgent(Agent):
         model = Sequential()
 
         model.add(Dense(2*self.state_shape, input_shape=input_shape, activation='relu'))
-        model.add(Dense(8, activation='relu'))
+        #model.add(Dense(8, activation='relu'))
         #output layer
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
@@ -215,8 +215,8 @@ class DeepQLearningAgent(Agent):
             return
 
         # random elements from memory
-        minibatch = random.sample(self.memory, 16)
-        minibatch.extend(random.sample(self.hight_reward_memory, 16))
+        minibatch = random.sample(self.memory, 32)
+        minibatch.extend(random.sample(self.hight_reward_memory, 32))
 
         current_states = np.array([memory[0] for memory in minibatch])
         current_qs_list = self.q_nn.predict(current_states)
@@ -246,7 +246,7 @@ class DeepQLearningAgent(Agent):
             X.append(current_state)
             y.append(current_qs)
 
-        self.q_nn.fit(np.array(X), np.array(y), batch_size=32, verbose=0, shuffle=False)
+        self.q_nn.fit(np.array(X), np.array(y), batch_size=64, verbose=0, shuffle=False)
 
 
 class DeepQLearningAgentGA(Agent):
