@@ -94,8 +94,12 @@ Pranav Kasela - 846965\\[1cm]
 
 
 \begin{abstract}
-
+The purpose of this project is to create agents able to simulate human behaviors and tendencies when subjected to incentives within different environments. In 4 games, relationships will be established between the agents, fostered by positive or negative signals, and natural factors such as the health and fear level will be recreated. More precisely, in the first experiment three different methods will be used to allow a single Reinforcement Learning system to beat a non-intelligent rival. In the next two,
+the players will be pushed to face each other in a fight, configured first as a duel and then as a battle - among five of them. Finally, two of the same agents will be encouraged to work together to eliminate a common enemy.\\*
+Each game is accompanied by a graphic component that shows the actual progress of the game.
 \end{abstract}
+\newpage
+\newpage
 \tableofcontents
 
 
@@ -103,8 +107,7 @@ Pranav Kasela - 846965\\[1cm]
 
 %Methodological Approach is the central and most important section of the report. Its objective must be to show, with linearity and clarity, the steps that have led to the definition of a decision model. The description of the working hypotheses, confirmed or denied, can be found in this section together with the description of the subsequent refining processes of the models. Comparisons between different models (e.g. heuristics vs. optimal models) in terms of quality of solutions, their explainability and execution times are welcome.
 %Do not attempt to describe all the code in the system, and do not include large pieces of code in this section, use pseudo-code where necessary. Complete source code should be provided separately (in Appendixes, as separated material or as a link to an on-line repo). Instead pick out and describe just the pieces of code which, for example: are especially critical to the operation of the system; you feel might be of particular interest to the reader for some reason; illustrate a non-standard or innovative way of implementing an algorithm, data structure, etc..You should also mention any unforeseen problems you encountered when implementing the system and how and to what extent you overcame them. Common problems are: difficulties involving existing software.
-
-
+\newpage
 \section{Introduction}
 Reinforcement Learning is the branch of Machine Learning gathering several techniques designed to create a system, an agent, capable of learning the best way to achieve goals within an environment, whose elements - such as, for example, obstacles or objectives - can also vary over time. In other words, this agent simulate the process of human understanding, by exploring the initially unknown environment and consequently receiving rewards or penalization based on the goodness of the choices made.\\*
 In this study, we especially set ourselves the goals of:
@@ -167,7 +170,7 @@ During the iterations, the performances of Bilbo are tracked by counting the num
 \subsection{Deep Q-Learning approach}
 In the previous methodology, Q-Learning algorithm, the experience acquired by Bilbo during the games was based on explicit tables, - Q matrix and reward matrix - holding the information discovered, so that he could memorize which actions to choose in any given state. This tables could end up to be far too large and unwieldy when the game is composed of a large number of states and potential actions, or the world becomes larger. Similarly, still maintaining a medium or small gridworld, this mechanism leads to a loss of efficiency in the learning process, slowing down the progress of the system - namely the algorithm - which constitutes the agent.\\*
 The solution to this problem can be the application of a Deep Reinforcement Learning methodology, which consists in training a neural network to predict Q values for each action in a certain state, instead of having explicit tables.\\*
-The input of this neural network, implemented within Q-learning algorithm, is not only the simple set of coordinate describing the location of the agent itself and of the dragon, which is the current state, but a more general from, this way the model will be able to generalize to different scenarios:
+The input of this neural network, implemented within Q-learning algorithm, is not only the simple set of coordinate describing the location of the agent itself and of the dragon, which is the current state, but a more general from, so that the model will be able to generalize to different scenarios. This reshaped form of current state is produced in two steps, by:
 \begin{enumerate}
   \item computing the distance between Bilbo and the treasure and between Bilbo and the dragon by subtracting respective coordinates;
   \item checking whether the position of Bilbo is at the boarder  for all four sides - ordered as "up", "down", "right", "left" - and assigning 0 if the given direction is accessible or 1 if it is borderline.
@@ -180,7 +183,7 @@ The output are the Q values for each action in the given state, which will appro
 $$(r+\gamma\;max_{a'}\;Q'(s',a')-Q(s,a))^2$$
 Starting from this, the neural network is built as a sequential model composed by:
 \begin{itemize}
-  \item the input layer, receiving the reshaped current state, namely the information about the current distance from the other entities and with respect to the border
+  \item the input layer, receiving the reshaped current state, namely the information about the current distance from the other entities and with respect to the border;
   \item a hidden layer composed by 16 neurons activated by a Rectified Linear Unit (ReLU) function; 
   \item the linear activated output layer with one neuron for each possible action in the given state, which hence performs the linear summation of the inputs and the weights, with no additional function applied, providing the estimated Q values.
 \end{itemize}
@@ -214,16 +217,42 @@ In this way, the agent is encouraged to approach and attack as soon as the dista
 The operation mode is similar to the normal Q-learning algorithm, exception made for the way the two agents learn how to win the game: while Bilbo was limited to acquiring the right way to avoid an element that performed random movements, the dragon, and reach the treasure, in this experiment the duelists will be forced to react to the opponent's moves and choose the right moment to attack. In details, these dynamics are made possible by the function \textit{get\_action} within the "Agent" class:  at each step, if a number randomly extracted from a uniform variable is less than $\epsilon$ hyperparameter, one system performs a random moves among the five possibilities, that are moving in one of the four walkable direction - "up", "down", "right", "left" - or attack; otherwise, it chooses the action maximizing the Q-value by looking at the Q-matrix entries in correspondence with current state, which is composed of its position and the opponent's coordinates. Then, it gets the two new locations, checks the game state, receives the rewards. Finally, it computes the new Q-value for the next state - with the same updating rule explained in the section 2.1 - and stores it in the Q-matrix. These phases are iterated, as said previously, over 500 epochs.\\*
 The game will be repeated 100,000 times. The hyperparameters of both duellists are set as follows:
 \begin{itemize}
-  \item $\gamma$ = 0.9, making the agent more "concerned" about next moves, hence more reactive to the opponent's strategy
+  \item $\gamma$ = 0.9, making the agent slightly more "concerned" about next moves, hence more reactive to the opponent's strategy
   \item $\alpha$ = 0.75, improving the learning rate, thus the pace at which it acquires new information
   \item $\epsilon$ = 0.05, setting the probability of a random exploration up to 5\%.
 \end{itemize} 
 %Risultati
 \subsection{Game 3: Battle among five agents}
-
+This third experiment is configured as an extension of the previous game, in which 5 players will wander around the world and will be pushed, still by tuning the various penalties, to eliminate each other in a battle all against all. At this point, still generating an environment as a gridworld, the current state, input of each player's epoch, would have 10 dimensions, ie 2 coordinates for each of the 5 players. Therefore, every player's Q-matrix would have an excessive dimensionality, forcing the Q-learning algorithm to calculate the distance and the direction based on each of the 10 coordinates. In order to avoid such a computational weight, a technical improvement has been introduced: the conversion of the initial gridworld into a graph. By replacing the empty cells with a node, based on the positions of the predetermined obstacles, and combining these with edges to delineate the accessible paths, it is possible to exploit a clearly more efficient method of calculating distance: the shortest path. In details, during each epoch, with the purpose of being able to "observe" the moves of the adversaries within the environment, in order to react to them in a reasonable time, which means evaluating the current state and opt for the action that maximizes the q-value of the given state, each system, instead of normally monitoring the proximity of the others through the coordinates, uses the \textit{"shortest\_path"} function from the Python \textit{"NetworkX"} package. In this way he gets the fastest route to reach every other character in the game. Then, select the shortest route among these 4 results, which is related to the closest enemy. Finally, to complete the update of the current status, it compares the y-delta associated with the path towards this target to the x-delta, obtaining the direction of the vector. This approach greatly reduces the time required for the computation of a given state, thereby decreasing the total duration of the learning process. Thanks to the new structure, the current status consists of only 2 values for each precise opponent:
+\begin{itemize}
+  \item the direction - between the usual 4 - towards which the player must move to reach the rival,
+  \item a binary number equal to 0 if the distance is null, that is when the players are in adjacent positions, and 1 otherwise.
+\end{itemize}
+Therefore, when the player has developed sufficient knowledge, his movement will tend to depend on the location of the closest enemy and to coincide with the best route.\\*
+As in the previous section, agents will learn to attack enemies to win the game. Also here, the attack action can be performed when the duelists are located on adjacent nodes and entails a decrease in the same health score mentioned above. However, this time, the rules are different because of the more complex dynamics:
+\begin{itemize}
+  \item if a player carries out an attack from the shortest distance, he causes a damage that reduces the target's health by one point, and receives a positive reward of + 10. In the event that this attack leads to the annulment of the rival's health, coinciding with his elimination from the game, the agent would receive a reward of + 20.
+  \item The "health" parameter is still set equal to 10. When one player's health becomes null, it means he has been killed, and he receives a penalty of -10.
+\end{itemize}
+Dead agents are now moved to an alternative world, outside the main environment within which the normal phases take place. Indeed, their position is set in correspondence with a grave character within a "graveyard" zone of the world, generated by the function \textit{put\_p\_in\_grave}.\\*
+Another change with respect to the previous experiment is the presence of the "fear" factor, calculated as follows:
+$$\frac{1}{h}*\frac{1+d}{d}$$
+with h = health score and d = distance from the enemy.
+This again becomes a multiplier of the $\epsilon$ hyperparameter, but unlike the first time, the probability of exploring the world, namely implementing a random move, is not only influenced by the normalized distance from the nearest enemy, but it is also inversely proportional to the agent's health state. This means that, for the same distance from the enemy, the "less healthy" player will be more likely to perform an action maximizing the Q-value. At the same time, greater 	proximity translates into greater prudence. This double mechanism tries to simulate the human instinct of self-preservation, increasing in situations of greater danger.\\*
+As far as Q-learning algorithm operation mode is concerned, it is identical to the one presented in the previous section, except for the fact of checking each agent's state of life or death during the game, and using distance and direction calculated by the shortest path method instead of the coordinates.\\*
+The experiment involves a maximum number of epochs equal to 400,
+at most 10 episodes and the following hyperparameters:
+\begin{itemize}
+  \item $\gamma$ = 0.9,
+  \item $\alpha$ = 0.5,
+  \item $\epsilon$ = 0.5,
+  \item $\epsilon\;decay$ = 0.995 up to 0.01.
+\end{itemize}
+Performances are still tracked at the end of every game.
 %Risultati
 
 \section{Multi-agent Cooperation}
+The last part of the study focuses on the opposite dynamics with respect to competition: cooperation, with the aim of building systems able to learn to help each other - and understand the best way to do it - in achieving a common goal , which, in this case, coincides with the killing of the dragon. A fourth world scattered with obstacles is initialized by creating the same graph structure described above, in order to still efficiently manage the complexity of a collaborative game.
 %Risultati
 
 \section{Conclusions}
