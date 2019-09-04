@@ -1,6 +1,13 @@
 # DragonHunting
 
-![Deep Model](https://github.com/moiraghif/DragonHunting/blob/master/Bilbo%20World/videos/15x15_deep.gif)
+Link to the result videos:
+- [Basic Q Learning 15x15](https://youtu.be/ttpgUvnMRqA)
+- [Basic Q Learning 50x50](https://youtu.be/tJgLUjiw9xk)
+- [Deep Model with Experience](https://youtu.be/LjSHDDdAEBM)
+- [Deep Model with GA](https://youtu.be/2fPkot9KPQo)
+- [Duel](https://youtu.be/pATtjVN7gSc)
+- [Duel_2](https://youtu.be/4gbillh_rHc)
+- [TeamWork](https://youtu.be/LoqvYnPFBtk)
 
 Is the AI brave enought to face a dragon?
 
