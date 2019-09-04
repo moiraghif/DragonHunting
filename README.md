@@ -1,7 +1,7 @@
 # DragonHunting
 
 Link to the result videos:
-- [Basic Q Learning 15x15](https://youtu.be/ttpgUvnMRqA)
+- [Basic Q Learning 15x15](https://youtu.be/xcB41oXHxlY)
 - [Basic Q Learning 50x50](https://youtu.be/tJgLUjiw9xk)
 - [Deep Model with Experience](https://youtu.be/LjSHDDdAEBM)
 - [Deep Model with GA](https://youtu.be/2fPkot9KPQo)
