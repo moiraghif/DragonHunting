@@ -90,7 +90,9 @@ class World:
                 if enemy.type == agent.type:
                     reward -= 10
                 else:
-                    reward += (10 if enemy.alive() else 20)
+                    reward += (5 if enemy.alive() else 25)
+        if reward > 0:
+            reward = reward + (agent.healt - 3)/(agent.healt + 1)*reward
         return reward if reward != 0 else -5
 
     def get_dist_to_enemy(self, agent, enemy):
@@ -181,6 +183,8 @@ class World:
             return tuple(state)
 
         state = []
+        health = 1 if agent.healt > 3 else 0
+        state.append(health)
         for p in others:
             if not p.alive():
                 state.append(0)
@@ -204,7 +208,14 @@ class World:
                 d = 2
             elif direction[1] == -1:
                 d = 3
-            dist = 0 if len(min_pos) == 2 else 1
+            if len(min_pos) == 2:
+                dist = 0
+            elif len(min_pos) == 3:
+                dist = 1
+            elif len(min_pos) == 4:
+                dist = 2
+            else:
+                dist = 3
             state.append(d)
             state.append(dist)
 

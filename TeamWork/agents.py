@@ -41,14 +41,17 @@ class Agent:
         "set the world and the initial qtable (with random values)"
         self.world = world
         self.actions = list(self.generate_actions())
-        self.qtable = np.array([[[[[np.random.rand()
-                                    for _ in range(len(self.actions))]
-                                   for player_1_dist in range(2)]
-                                  for player_1_direction in range(4)]
-                                 for player_2_dist in range(2)]
-                                for player_2_direction in range(4)]) \
+        self.qtable = np.array([[[[[[np.random.rand()
+                                     for _ in range(len(self.actions))]
+                                    for player_1_dist in range(4)]
+                                   for player_1_direction in range(4)]
+                                  for player_2_dist in range(4)]
+                                 for player_2_direction in range(4)]
+                                for healt in range(2)]) \
              if create_qtable else np.load(self.qfile + ".npy")
         # enemy direction, enemy distance, action
+        if create_qtable:
+            self.save_qtable()
 
     def generate_actions(self):
         "yes, it is a clojure: it returns a function"
