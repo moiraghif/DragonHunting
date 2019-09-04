@@ -19,14 +19,14 @@ inverse_possible_moves = {0: 'up',1: 'down',2: 'left',3: 'right'}
 
 
 bilbo = DeepQLearningAgent(PLAYER_CHAR)
-win = 0
 lost = 0
 nothingness = 0
-tot_reward = 0
+rewards = []
 fig = plt.figure(figsize=(20, 20))
 for ep in range(TOT_EPISODES):
     anim = []
-
+    win = 0
+    tot_reward = 0
     mondo = World(WORLD_DIM, bilbo=bilbo, obstacle=False, random_spawn=True)
     #do deep Q-stuff
     game_ended = False
@@ -56,8 +56,8 @@ for ep in range(TOT_EPISODES):
         anim.append((plt.pcolormesh(env, cmap='CMRmap'),))
         if game_ended or epoch + 1 == MAX_EPOCH:
             plt.text(0, 0.5, "Total Reward:" + str(tot_reward) + " Total Epoch:" + str(epoch+1), color='white', fontsize=20)
-
-print("Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, Tot Reward: {}, Epoch survived: {}".format(win, lost, nothingness, tot_reward, epoch))
+    rewards.append(tot_reward)
+    print("ep: {} Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, Tot Reward: {}, Epoch survived: {}".format(ep + 1, win, lost, nothingness, tot_reward, epoch))
 im_ani = animation.ArtistAnimation(fig, anim, interval=30, repeat_delay=0,
                                    blit=False)
 
@@ -68,3 +68,14 @@ writer = animation.FFMpegWriter(fps=30)
 im_ani.save('./videos/animation_video_deep_15x15.mp4', writer=writer)
 
 plt.show()
+
+
+plt.style.use('ggplot')
+fig = plt.figure(figsize=(10,10))
+rew, = plt.plot(rewards, color='tab:orange')
+plt.plot(np.repeat(np.mean(rewards), len(rewards)), color='tab:blue')
+plt.text(10, np.mean(rewards) + 15, "Average Reward: " + str(np.mean(rewards)), color='tab:blue', fontsize=15, withdash=True)
+plt.legend([rew], ["Rewards"], loc='best')
+plt.xlabel('Episodes')
+plt.ylabel('Rewards')
+fig.savefig('./plots/reward_deep_test_'+str(WORLD_DIM)+'.png')
