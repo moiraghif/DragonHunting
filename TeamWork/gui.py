@@ -89,6 +89,7 @@ class GUI:
         TIME = 0.0
         alive = {p: True for p in self.world.players.keys()}
         done = False
+        testo = self.draw.create_text(100, 10, text="")
         for epoch in range(iterations):
             game_ended = False
             for p in alive.keys():
@@ -128,11 +129,14 @@ class GUI:
                     self.move_agent(p, delta_pos)
                     time.sleep(TIME)
                 self.save_png()
-            what_to_print = ""
+            what_to_print = "Health: "
             for p in self.world.players.keys():
                 health = '0'+str(p.healt) if p.healt < 10 else str(p.healt)
-                what_to_print = what_to_print + p.char + ":" + health + "\t"
+                what_to_print = " " + what_to_print + p.char + ":" + health + "; "
             print(what_to_print, end='\r')
+            self.draw.delete(testo)
+            testo = self.draw.create_text(160, 20, text=what_to_print, font=("Comic Sans", 20))
+            self.draw.itemconfig(testo, text=what_to_print)
             if np.sum(np.array([v for k, v in alive.items()])) == 1:
                 return
         print(what_to_print)
