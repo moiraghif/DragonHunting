@@ -16,7 +16,7 @@ players = [agents.Agent(constants.PLAYER1_CHAR),
            agents.Agent(constants.PLAYER2_CHAR),
            agents.Agent(constants.DRAGON_CHAR)]
 
-world1 = GridWorld.World(players, True)
+#world1 = GridWorld.World(players, True)
 game_ended = 0
 for ep in range(0, EPISODES):
 
