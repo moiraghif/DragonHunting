@@ -96,7 +96,9 @@ for ep in range(TOT_EPISODES):
     print("ep: {} Tot Won: {}, Tot Lost: {}, Tot Nothingness: {}, Tot Reward: {}, Epoch survived: {}".format(ep + 1, win, lost, nothingness, tot_reward, epoch))
 
 plt.style.use('ggplot')
-fig = plt.figure(figsize=(20,20))
+fig = plt.figure(figsize=(10, 10))
+plt.rc('xtick', labelsize=15)
+plt.rc('ytick', labelsize=15)
 plt.boxplot([rewards,rewards_ga], notch=True, meanline=True, showmeans=True,
            meanprops=dict(linestyle='--', linewidth=2.5, color='tab:blue'),
            medianprops=dict(linestyle='--', linewidth=2.5, color='purple'),
