@@ -294,6 +294,8 @@ In other words, any extension of such experiments could aim at reproducing, more
 \bibliographystyle{IEEEtran}
 \bibliography{references.bib}
 
+\onecolumn 
+
 \appendix
 \section{Appendix}
 \begin{figure}[!h]
@@ -302,19 +304,24 @@ In other words, any extension of such experiments could aim at reproducing, more
 	\caption{Policy Map for a 15x15 BilboWorld}
 \end{figure}
 \begin{figure}[!h]
-	\includegraphics[width=\linewidth]{./figs/q_epoch_15.png}
+	\centering
+	\vspace{-2cm}
+	\includegraphics[width=\linewidth,height=10cm]{./figs/q_epoch_15.png}
+	\vspace{-1cm}
 	\caption{Epoch required in Q-Learning Training Phase}
-\end{figure}
-\begin{figure}[!h]
-	\includegraphics[width=\linewidth]{./figs/q_reward_15.png}
+	\vspace{0cm}
+	\includegraphics[width=\linewidth,height=10cm]{./figs/q_reward_15.png}
+	\vspace{-1cm}
 	\caption{Rewards in Q-Learning Training Phase}
 \end{figure}
 \begin{figure}[!h]
-	\includegraphics[width=\linewidth]{./figs/deep_train.png}
+	\centering
+	\vspace{-2cm}
+	\includegraphics[width=\linewidth,height=10cm]{./figs/deep_train.png}
+	\vspace{-1cm}
 	\caption{Training phase of Deep Q-Learning}
-\end{figure}
-\begin{figure}[!h]
-	\includegraphics[width=\linewidth]{./figs/deep_ga_train.png}
+	\includegraphics[width=\linewidth,height=10cm]{./figs/deep_ga_train.png}
+	\vspace{-1cm}
 	\caption{Training phase of Deep Q-Learning with GA}
 \end{figure}
 
