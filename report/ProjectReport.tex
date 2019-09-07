@@ -120,7 +120,7 @@ The following sections will present games' and agents' characteristics.
 
 \section{Game 1: Bilbo and the dragon}
 This first experiment has been created with the aim of employing Q-Learning algorithm, a Deep Q-Learning approach and Deep Q-Learning with the integration of Genetic Algorithm on a single system whose objective is beating a non-intelligent rival.\\*
-The environment the three agents will be trained within is defined as a class named ``World''\footnote{\href{https://github.com/moiraghif/DragonHunting/blob/master/Bilbo\%20World/CreateBilboWorld.py}{Link to the code here.}}, which is a 15x15 array, to which various elements are added:
+The environment in which the three Bilbos will be trained within is defined as a class named ``World''\footnote{\href{https://github.com/moiraghif/DragonHunting/blob/master/Bilbo\%20World/CreateBilboWorld.py}{Link to the code here.}}, which is a 15x15 array, to which various elements are added:
 \begin{itemize}[noitemsep, topsep=0ex]
   \item Optional \textbf{obstacles}, randomly generated with a seed, so their position is randomly chosen but will remain the same throughout the games;
   \item A non movable \textbf{treasure}, which can be located in a randomly chosen coordinate or predefined too. It can only caught by the agent;
@@ -138,7 +138,7 @@ Another Python class named ``Agent''\footnote{\href{https://github.com/moiraghif
 He can move in the same four direction of the dragon - `up', `down', `right', `left'. \\*
 He is affected by a ``fear'' factor, in order to simulate an aspect of real human exploring process. If Bilbo is far from it, the ``fear'' value is close to 1; otherwise, as the distance from the dragon decreases, the value increases at most to 2. This measure is calculated as follows: 
 $$\Big(\frac{d}{1+d}\Big)^{-1}$$
-with d representing the Euclidean distance between the dragon's position and Bilbo's location.
+with $d$ representing the Euclidean distance between the dragon's position and Bilbo's location.
 This will consist in a divisor of the $\varepsilon$ parameter used in Reinforcement Learning algorithms to produce random moves in the grid and allow a better exploration of the world. As one can see from the formulation, this factor is a normalized distance, used to prevent $\varepsilon$ to be too much affected by it.\\*
 In conclusion, in this way, when Bilbo approaches the dragon, his fear level increases and the chance of a random exploration as well.
 
@@ -150,7 +150,7 @@ $$Q(s,a)=$$
 $$Q(s,a)+\alpha(r+\gamma\;max\;Q(s',a') - Q(s,a))$$
 with $Q(s,a)$ Q-value of current state and $Q(s',a')$ Q-value of next state; $r$ the reward obtained by taking action $a$ at the state $s$; $\gamma$ discounting factor regulating the impact of future rewards; $\alpha$ learning rate. In this case, the values of the hyper-parameters chosen were $\alpha=0.5, \gamma=0.8$, and $\varepsilon=0.2$\\*
 Hence, the worth of an action in a certain state also depends on the discounted worth produced by the best action in the next state $s'$, and on the extent of the steps to the convergence selected with parameter $\alpha$. In other words, this policy makes agent estimate the goodness of an action in a certain state based on the cascaded, discounted reward from the next states, where the states, in this case, are given only by Bilbo's coordinates. 
-In this way, at state $s$, Bilbo won't choose the action providing the best rewards only in the current state, but the action which leads to the best total rewards over all the states, while exploring the world in order to discover the rewards or penalties of all action. As Q-values are updated, they are stored in a Q matrix\footnote{Q-matrices are available \href{https://github.com/moiraghif/DragonHunting/tree/master/Bilbo\%20World/models}{here.}}, so that Bilbo can learn from past experiences. This exploration process, that consists merely in random moves around the ``gridworld'', is fostered by $\varepsilon$ parameter, which depends on ``fear factor'' as aforementioned. More over, $\varepsilon$ decays by being multiplied to a ``decay factor'' (of $0.99$) at each step, up to a minimum of 0.01.\\*
+In this way, at state $s$, Bilbo will not choose the action providing the best rewards only in the current state, but the action which leads to the best total rewards over all the states, while exploring the world in order to discover the rewards or penalties of all action. As Q-values are updated, they are stored in a Q matrix\footnote{Q-matrices are available \href{https://github.com/moiraghif/DragonHunting/tree/master/Bilbo\%20World/models}{here.}}, so that Bilbo can learn from past experiences. This exploration process, that consists merely in random moves around the ``gridworld'', is fostered by $\varepsilon$ parameter, which depends on ``fear factor'' as aforementioned. More over, $\varepsilon$ decays by being multiplied to a ``decay factor'' (of $0.99$) at each step, up to a minimum of $0.01$.\\*
 In conclusion, this process can be explained as follows: if a number extracted from a uniform between 0 and 1 is less than $\varepsilon$, the system performs a random step. Otherwise, it performs the action related to the maximum Q value in that state.\\* 
 Then, the limits of epochs and episodes executable are both set to 2000.\\*
 During the iterations, the performances of Bilbo are tracked by counting the number of wins, cases where he manages to stay alive and get the treasure, and losses, when he ends up killed by the dragon.
@@ -236,21 +236,21 @@ This approach greatly reduces the time required for the computation of a given s
 	\caption{Conversion from a Gridworld to a Graph}
 	\vspace{-0.5cm}
 	\label{fig:world2graph}
-\end{figure}
+\end{figure}      
 
-Therefore, when the player has developed sufficient knowledge, his movement will tend to depend on the location of the closest enemy and to coincide with the best route.\\*
-The dynamics of the games is the same as before, however, this time, the rules are different because of the more complex dynamics:
+Therefore, when the player has developed sufficient knowledge, his movement will tend to depend on the location of the closest enemy and to coincide with the best route. \\
+The dynamics of the games is the same as before, however, this time the rules are different because of the more complex dynamics:
 
 \begin{itemize}[noitemsep, topsep=0ex]
   \item if a player carries out an attack from the shortest distance, he causes a damage that reduces the target's health by one point, and receives a positive reward of +10. In the event that this attack leads to the annulment of the rival's health, coinciding with his elimination from the game, the agent would receive a reward of +25.
-  \item The ``health'' parameter is still set equal to 10. When one player's health becomes null, it means he has been killed, and he receives a penalty of -10.
-  \item If the attack didn't damage anyone (no one was near enough) a penalty of -5 is given.
+  \item The ``health'' parameter is still set equal to 10. When one player's health becomes zero, it means he has been killed, and he receives a penalty of -10.
+  \item If the attack did not damage anyone (no one was near enough) a penalty of -5 is given.
 \end{itemize}
 
 Another change with respect to the previous experiment is the presence of the ``fear'' factor, calculated as follows:
 $$\frac{1}{h}\cdot\frac{1+d}{d}$$
-with h = health score and d = distance from the enemy.
-This again becomes a multiplier of the $\varepsilon$ hyperparameter (it decays from 0.5 to 0.01 with a decay factor of 0.995), but unlike the first time, the probability of exploring the world, namely implementing a random move, is not only influenced by the normalized distance from the nearest enemy, but it is also inversely proportional to the agent's health state. 
+with $h =$ health score and $d =$ distance from the enemy.
+This again becomes a multiplier of the $\varepsilon$ hyperparameter (it decays from $0.5$ to $0.01$ with a decay factor of $0.995$), but unlike the first time, the probability of exploring the world, namely implementing a random move, is not only influenced by the normalized distance from the nearest enemy, but it is also inversely proportional to the agent's health state. 
 This means that, for the same distance from the enemy, the ``less healthy'' player will be more likely to perform an action maximizing the Q-value. At the same time, greater proximity translates into greater prudence. 
 This double mechanism tries to simulate the human instinct of self-preservation, increasing in situations of greater danger.\\*
 The experiment involves a maximum number of epochs equal to 400,
@@ -259,12 +259,12 @@ Performances are still tracked at the end of every game.
 The performance is tested over 5000 games, and, as expected, the number of losses among the players are similar: P1(1055 loss),  P2(1119 loss), P3(926 loss), P4(950 loss) and P5(950 loss).
 
 \section{Multi-agent Cooperation}
-The last part of the study focuses on the opposite dynamics with respect to competition: cooperation, with the aim of building systems able to learn to help each other - and understand the best way to do it - in achieving a common goal , which, in this case, coincides with the killing of an enemy.\\*
+The last part of the study focuses on the opposite dynamics with respect to competition: cooperation, with the aim of building systems able to learn to help each other - and understand the best way to do it - in achieving a common goal, which, in this case, coincides with the killing of an enemy.\\*
 To do so, a fourth world scattered with obstacles is initialized by creating the same graph structure described above, in order to still efficiently manage the complexity of a collaborative game.\\*
 In the game\footnote{\href{https://github.com/moiraghif/DragonHunting/tree/master/TeamWork}{Link to the code here.}}, two allies soldiers and a dragon are randomly spawn in one of the accessible locations within the graph. 
 These three agents are not able to recognize their own role or the others' one, a concept they will ``understand'' thanks to the penalties and rewards received over the various epochs, and they share the same functioning and the same way of learning and playing the game. 
 Indeed, the current state of each epoch, therefore the stimulus from which the algorithm generates a reaction that maximizes the Q-value, is identical in all three, and equal to the one explained in the previous section. Since this test is an extension of the previous one, the methodology used is again Q-learning algorithm, with the integration of fear factor as multiplier of $\varepsilon$ hyperparameters. \\*
-The player knows the direction and distance of all other agents on the map and a vision has been introduced, but now the distance parameter of the Q-table is no more binary, assuming 4 values: 0 if the players are attached; 1,2 if the distance in the graph is respectively 1 or 2; 3 if the distance is greater than 2. The aim is giving more information to the player, based on which it can decide its action.\\*
+The player knows the direction and distance of all other agents on the map but now they can ``see'': the distance parameter of the Q-table is no more binary, but it can assume 4 values (0 if the players are attached; 1,2 if the distance in the graph is respectively 1 or 2; 3 otherwise). The aim is giving more information to the player, based on which it can decide its action.\\*
 In order to make three players' behaviour more realistic, the health component is added to the status, in order to simulate the survival instinct and hence incentivize the agent to escape the clash when his health level starts to be dangerously low. Thus, the reward of an inflicted attack depends on the health score, when the reward is positive, as follows:
 \[
 \systeme{r = reward+reward\cdot\frac{h-3}{h+1}\;\;if\;1<h\leq 12, r = -5\qquad\qquad\qquad\qquad\quad if\;0<h\leq 1}
@@ -278,7 +278,7 @@ with h between 0 and 12, indicating the health of the player. This means reward 
 In every case, when a player is killed, he receives a penalty of -10.\\*
 In this way, it was possible to educate the two soldiers for cooperation. To make the experiment even more interesting, the game was designed so that the only possible way of victory for the two soldiers was precisely mutual help: while their health score remains equal to 10, dragon's one is 12. Therefore, in the event of a duel between a single soldier and the dragon, the probability that the second one wins is clearly higher, and increases with the experience gained.\\*
 In conclusion, while the dragon will learn to always chase and eliminate the closest enemy, being encouraged by the high reward associated with an attack inflicted compared to the penalty of a wound suffered, the two soldiers will have to learn the importance of attacking the opponent jointly and protecting each other, the only solution to their Multi-agent Reinforcement Learning problem.\\*
-The hyperparameters are the same of the previous section, exception made for $\varepsilon$ decay, equal to 0.9999.\\*
+The hyperparameters are the same of the previous section, exception made for $\varepsilon$ decay, equal to $0.9999$.\\*
 Also in this case, agents', or dragon's, performances can be summarized by looking at the number of win and losses over the episodes.\\*
 %Risultati
 Over 1000 episodes, after having trained in 50.000 games, the number of loss games are respectively:\\*
