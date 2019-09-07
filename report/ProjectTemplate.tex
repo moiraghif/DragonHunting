@@ -138,8 +138,7 @@ Another Python class named ``Agent''\footnote{\href{https://github.com/moiraghif
 He can move in the same four direction of the dragon - `up', `down', `right', `left'. \\*
 He is affected by a ``fear'' factor, in order to simulate an aspect of real human exploring process. If Bilbo is far from it, the ``fear'' value is close to 1; otherwise, as the distance from the dragon decreases, the value increases at most to 2. This measure is calculated as follows: 
 $$\Big(\frac{d}{1+d}\Big)^{-1}$$
-with d representing the Euclidean distance between the dragon's position (D) and Bilbo's location (B):
-$$d=\sqrt{(D_{x}-B_{x})^2+(D_{y}-B_{y})^2}$$
+with d representing the Euclidean distance between the dragon's position and Bilbo's location.
 This will consist in a divisor of the $\varepsilon$ parameter used in Reinforcement Learning algorithms to produce random moves in the grid and allow a better exploration of the world. As one can see from the formulation, this factor is a normalized distance, used to prevent $\varepsilon$ to be too much affected by it.\\*
 In conclusion, in this way, when Bilbo approaches the dragon, his fear level increases and the chance of a random exploration as well.
 
@@ -147,7 +146,8 @@ Given this general aspects of Game 1, three methodologies have been exploited to
 
 \subsection{Q-Learning algorithm}
 The first approach consists in Q-Learning algorithm\footnote{The code consists in QLearningAgent class in \href{https://github.com/moiraghif/DragonHunting/blob/master/Bilbo\%20World/agents.py}{this file} and also \href{https://github.com/moiraghif/DragonHunting/blob/master/Bilbo\%20World/Bilbo_q_learning.py}{the scripts inside this file}.} \cite{2}, which is based on the propagation of potential reward from the best possible actions in future states. Following this idea, each action in each state is related to a Q value, updated when new relevant information about the environment, derived from exploration, is made available. The Q-Learning algorithm utilizes the following updating rule:
-$$Q(s,a)=Q(s,a)+\alpha(r+\gamma\;max\;Q(s',a') - Q(s,a))$$
+$$Q(s,a)=$$ 
+$$Q(s,a)+\alpha(r+\gamma\;max\;Q(s',a') - Q(s,a))$$
 with $Q(s,a)$ Q-value of current state and $Q(s',a')$ Q-value of next state; $r$ the reward obtained by taking action $a$ at the state $s$; $\gamma$ discounting factor regulating the impact of future rewards; $\alpha$ learning rate. In this case the values of the hyper-parameters chosen were $\alpha=0.5, \gamma=0.8, and \varepsilon=0.2$\\*
 Hence, the worth of an action in a certain state also depends on the discounted worth produced by the best action in the next state $s'$, and on the extent of the steps to the convergence we selected with parameter $alpha$. In other words, this policy makes agent estimate the goodness of an action in a certain state based on the cascaded, discounted reward from the next states, where the states in this case are given only by the coordinates of Bilbo. 
 In this way, at state $s$, Bilbo won't choose the action providing the best rewards only in the current state, but the action which leads to the best total rewards over all the states, while exploring the world in order to discover the rewards or penalties of all action. As Q-values are updated, they are stored in a Q matrix\footnote{Q-matrices are available \href{https://github.com/moiraghif/DragonHunting/tree/master/Bilbo\%20World/models}{here.}}, so that Bilbo can learn from past experiences. This exploration process, that consists merely in random moves around the ``gridworld'', is fostered by $\varepsilon$ parameter, which depends on ``fear factor'' as aforementioned. More over, $\varepsilon$ decays by being multiplied to a ``decay factor'' (of $0.99$) at each step, up to a minimum of 0.01.\\*
