@@ -7,7 +7,7 @@ import constants
 start_time = time.time()
 
 MAX_EPOCHS = 200
-EPISODES = 1000
+EPISODES = 5000
 
 players = [agents.Agent(constants.PLAYER1_CHAR),
            agents.Agent(constants.PLAYER2_CHAR),

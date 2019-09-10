@@ -184,7 +184,7 @@ The hyperparameters are:
 $\gamma$ = 0.8, maintaining the same Bilbo's ``foresight'' as before,
 $\varepsilon$ = 0.5, increasing the fixed component of random exploration probability with respect to the previous section and
 $decay\;factor$ = 0.9998, further slowing the decay\\*
-Model training required $\sim$19 hours with more that 2 million steps, in the testing phase. The model achieved an average reward of 300 over 1000 episodes (See Figure~\ref{fig:deep_vs_ga}).
+Model training required $\sim$19 hours with more that 2 million steps, in the testing phase. The model achieved an average reward of $301.5 \pm 24.9$ (99\% CI) over 1000 episodes (See Figure~\ref{fig:deep_vs_ga}).
 
 \subsection{Genetic Algorithm}
 
@@ -193,15 +193,13 @@ A solution part of the EA class is represented by the Genetic Algorithm \cite{7}
 Therefore, in this third subsection, Genetic Algorithm will be presented as an alternative, search-based, optimization method for learning weights within the Deep Reinforcement Learning system.\\*
 The operation mode of this third algorithm\footnote{\href{https://github.com/moiraghif/DragonHunting/blob/master/Bilbo\%20World/Bilbo_ga_deep_feels.py}{The code is available here} and in the ``DeepQLearningAgentGA'' class \href{https://github.com/moiraghif/DragonHunting/blob/master/Bilbo\%20World/agents.py}{inside this file.}} is completely identical to the previous one, except for the use of GA within the neural network training process. The neural network is simplified by removing the hidden layer. 
 In details, the weights optimization process takes place as follows: the system initializes 150 random sets of weights, Bilbo's learning parameters, and evaluates the fitness of every individual within each generation, where the fitness is the average reward collected over 3 games - here the objective is to maximize the fitness -, returning the individuals sorted according to their score. From them, it extracts the first 10\% - elitism parameter -, which will be used as parents of next generation. Indeed, each new individual will be created with a crossover function which randomly chooses among the genes of two parents, considered as ``father'' and ``mother''. After eventually undergoing a random mutation process - the multiplication of genotypes, hence the value of each weight, by a random number between -2 and 2 - , with a probability set equal to 5\%, these ``children'' are in turn used to produce a new generation. When 150 generations have been produced - iterations stopping criterion -, the algorithm obtains a certain solution for the weights values, which are finally passed to the neural network. \\*
-The training required $\sim$3 hours (6-7 times faster than Deep Q-Learning) and the average score of the trained model, over 1000 episodes, was 360, slightly higher that the Deep Q-Learning Method (See Figure~\ref{fig:deep_vs_ga}).
+The training required $\sim$3 hours (6-7 times faster than Deep Q-Learning) and the average score of the trained model, over 1000 episodes, was $363.6\pm 30.2$(99\% CI), slightly higher that the Deep Q-Learning Method (See Figure~\ref{fig:deep_vs_ga}).
 
 \begin{figure}[!h]
-	\vspace{-2cm}
+	\centering
 	\includegraphics[width=\linewidth]{./figs/deep_vs_ga.png}
-	\vspace{-1.5cm}
 	\caption{Comparison of the results of DQL and DQL with GA over 1000 games}
 	\label{fig:deep_vs_ga}
-	\vspace{-0.5cm}
 \end{figure}
 
 \section{Multi-agent Competition}
