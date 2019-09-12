@@ -2,6 +2,8 @@
 
 Is the AI brave enought to face a dragon?
 
+Link to the [presentation](https://prezi.com/view/MAKwPcQf3RjksMO3Wdrr/)
+
 Link to the result videos:
 - [Basic Q Learning 15x15](https://youtu.be/xcB41oXHxlY)
 - [Basic Q Learning 50x50](https://youtu.be/tJgLUjiw9xk)
